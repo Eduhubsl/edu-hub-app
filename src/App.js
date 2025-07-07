@@ -176,11 +176,10 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
         if (!file) { setModalInfo({ children: <p>Please upload your assignment file.</p> }); return; }
         setIsLoading(true);
         try {
-            const appId = firebaseConfig.appId || 'default-app-id';
             // NOTE: File upload to Firebase Storage would happen here in a real app.
             // We are only saving the metadata for this demonstration.
             const submissionData = { ...formData, serviceTitle: title, userId, isEmergency, fileName: file.name, fileSize: file.size, status: 'submitted', submittedAt: new Date() };
-            await addDoc(collection(db, `/artifacts/${appId}/public/data/submissions`), submissionData);
+            await addDoc(collection(db, "submissions"), submissionData);
             setModalInfo({ children: <div><h3 className="text-xl font-bold mb-4 text-green-600">Submission Successful!</h3><p>Your assignment has been submitted. You can track its status in your dashboard.</p></div> });
             setFormData({ subject: '', academicLevel: 'Diploma', deadline: '', message: '' });
             setFile(null);
@@ -223,9 +222,7 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
     useEffect(() => {
         if (!db || !selectedDate) return;
         const fetchBookedSlots = async () => {
-            const appId = firebaseConfig.appId || 'default-app-id';
-            const collectionPath = `/artifacts/${appId}/public/data/bookings`;
-            const q = query(collection(db, collectionPath), where("date", "==", selectedDate.toISOString().split('T')[0]));
+            const q = query(collection(db, "bookings"), where("date", "==", selectedDate.toISOString().split('T')[0]));
             const querySnapshot = await getDocs(q);
             const slots = querySnapshot.docs.map(doc => doc.data().time);
             setBookedSlots(slots);
@@ -240,10 +237,8 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
     const handleBookingSubmit = async (e) => {
         e.preventDefault(); setIsLoading(true);
         try {
-            const appId = firebaseConfig.appId || 'default-app-id';
-            const collectionPath = `/artifacts/${appId}/public/data/bookings`;
             const docId = `${selectedDate.toISOString().split('T')[0]}_${selectedTime}`;
-            await setDoc(doc(db, collectionPath, docId), { title, date: selectedDate.toISOString().split('T')[0], time: selectedTime, ...bookingDetails, userId, bookedAt: new Date() });
+            await setDoc(doc(db, "bookings", docId), { title, date: selectedDate.toISOString().split('T')[0], time: selectedTime, ...bookingDetails, userId, bookedAt: new Date() });
             setBookedSlots([...bookedSlots, selectedTime]);
             setModalContent("success");
             setBookingDetails({ name: '', email: '', phone: '', message: '' });
@@ -295,9 +290,7 @@ const AdminDashboard = ({ db }) => {
     useEffect(() => {
         if (!db) return;
         setIsLoading(true);
-        const appId = firebaseConfig.appId || 'default-app-id';
-        let collectionPath = `/artifacts/${appId}/public/data/${view}`;
-        let q = query(collection(db, collectionPath));
+        let q = query(collection(db, view));
         
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -406,8 +399,7 @@ const UserDashboard = ({ user, db, setPage }) => {
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const appId = firebaseConfig.appId || 'default-app-id';
-            const userDocRef = doc(db, `/artifacts/${appId}/public/data/users`, user.uid);
+            const userDocRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(userDocRef);
             if (docSnap.exists()) {
                 setProfile(docSnap.data());
@@ -420,8 +412,7 @@ const UserDashboard = ({ user, db, setPage }) => {
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
         setMessage('');
-        const appId = firebaseConfig.appId || 'default-app-id';
-        const userDocRef = doc(db, `/artifacts/${appId}/public/data/users`, user.uid);
+        const userDocRef = doc(db, "users", user.uid);
         try {
             await updateDoc(userDocRef, profile);
             setMessage('Profile updated successfully!');
@@ -506,8 +497,7 @@ function App() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
-                const appId = firebaseConfig.appId || 'default-app-id';
-                const userDocRef = doc(db, `/artifacts/${appId}/public/data/users`, user.uid);
+                const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
                     setUserData(docSnap.data());
@@ -526,8 +516,7 @@ function App() {
     }, []);
 
     const createUserProfile = async (user) => {
-        const appId = firebaseConfig.appId || 'default-app-id';
-        const userDocRef = doc(db, `/artifacts/${appId}/public/data/users`, user.uid);
+        const userDocRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
             await setDoc(userDocRef, {
