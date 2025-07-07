@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, setDoc, doc, setLogLevel } from 'firebase/firestore';
 
 // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
 const firebaseConfig = {
