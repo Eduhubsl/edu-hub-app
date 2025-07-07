@@ -1,7 +1,24 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, setDoc, doc, setLogLevel } from 'firebase/firestore';
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut 
+} from 'firebase/auth';
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    onSnapshot, 
+    query, 
+    where, 
+    getDocs, 
+    setDoc, 
+    doc, 
+    setLogLevel 
+} from 'firebase/firestore';
 
 // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
 const firebaseConfig = {
@@ -48,24 +65,43 @@ const Modal = ({ children, onClose }) => {
 
 // --- Main Application Components ---
 
-const Header = ({ setPage, userId }) => (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
-        <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-            <div 
-                className="cursor-pointer text-3xl font-extrabold text-dark-gray"
-                onClick={() => setPage('home')}
-            >
-                Edu-<span className="text-primary">Hub</span>
-            </div>
-            <div className="flex items-center space-x-2 md:space-x-4">
-                {userId && (
-                    <button onClick={() => setPage('dashboard')} className="hidden sm:block bg-gray-200 text-dark-gray font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Dashboard</button>
-                )}
-                <button onClick={() => setPage('profile')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">Profile</button>
-            </div>
-        </nav>
-    </header>
-);
+const Header = ({ setPage, user, auth }) => {
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            setPage('home'); // Redirect to home after logout
+        } catch (error) {
+            console.error("Error signing out: ", error);
+        }
+    };
+
+    return (
+        <header className="bg-white shadow-sm sticky top-0 z-40">
+            <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+                <div 
+                    className="cursor-pointer text-3xl font-extrabold text-dark-gray"
+                    onClick={() => setPage('home')}
+                >
+                    Edu-<span className="text-primary">Hub</span>
+                </div>
+                <div className="flex items-center space-x-2 md:space-x-4">
+                    {user ? (
+                        <>
+                            <button onClick={() => setPage('dashboard')} className="hidden sm:block bg-gray-200 text-dark-gray font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Dashboard</button>
+                            <button onClick={() => setPage('profile')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">Profile</button>
+                            <button onClick={handleLogout} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">Logout</button>
+                        </>
+                    ) : (
+                        <>
+                            <button onClick={() => setPage('login')} className="bg-gray-200 text-dark-gray font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Login</button>
+                            <button onClick={() => setPage('signup')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">Sign Up</button>
+                        </>
+                    )}
+                </div>
+            </nav>
+        </header>
+    );
+};
 
 const HomePage = ({ setPage }) => {
     const services = [
@@ -112,33 +148,26 @@ const HomePage = ({ setPage }) => {
 
 // ... AssignmentForm component remains the same ...
 const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Submit Your Assignment" }) => {
-    const [formData, setFormData] = useState({
-        name: '', email: '', whatsapp: '', subject: '', academicLevel: 'Diploma', deadline: '',
-    });
+    const [formData, setFormData] = useState({ name: '', email: '', whatsapp: '', subject: '', academicLevel: 'Diploma', deadline: '' });
     const [file, setFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [modalInfo, setModalInfo] = useState({ message: '' });
     const [deadlineError, setDeadlineError] = useState('');
-    
     const [descriptionMode, setDescriptionMode] = useState('text');
     const [textDescription, setTextDescription] = useState('');
-
     const [isRecording, setIsRecording] = useState(false);
     const [audioURL, setAudioURL] = useState('');
     const [audioBlob, setAudioBlob] = useState(null);
     const mediaRecorderRef = useRef(null);
 
     const handleStartRecording = async () => {
-        setAudioURL('');
-        setAudioBlob(null);
+        setAudioURL(''); setAudioBlob(null);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const mediaRecorder = new MediaRecorder(stream);
             mediaRecorderRef.current = mediaRecorder;
             const audioChunks = [];
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
+            mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
             mediaRecorder.onstop = () => {
                 const blob = new Blob(audioChunks, { type: 'audio/webm' });
                 setAudioBlob(blob);
@@ -148,90 +177,43 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
             mediaRecorder.start();
             setIsRecording(true);
         } catch (err) {
-            console.error('Error accessing microphone:', err);
             setModalInfo({ children: <p>Could not access microphone. Please check your browser permissions.</p> });
         }
     };
-
-    const handleStopRecording = () => {
-        if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-        }
-    };
-
-    const resetRecording = () => {
-        setAudioURL('');
-        setAudioBlob(null);
-    };
-
+    const handleStopRecording = () => { if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setIsRecording(false); } };
+    const resetRecording = () => { setAudioURL(''); setAudioBlob(null); };
     const getMinDeadline = () => {
         const today = new Date();
-        if (isEmergency) {
-            today.setDate(today.getDate() + 2);
-        } else {
-            today.setDate(today.getDate() + 5);
-        }
+        if (isEmergency) { today.setDate(today.getDate() + 2); } else { today.setDate(today.getDate() + 5); }
         return today.toISOString().split('T')[0];
     };
-
     const handleDateChange = (e) => {
         const selectedDate = new Date(e.target.value);
         const minDeadlineDate = new Date(getMinDeadline());
-        selectedDate.setHours(0, 0, 0, 0);
-        minDeadlineDate.setHours(0, 0, 0, 0);
-        if (!isEmergency && selectedDate < minDeadlineDate) {
-            setDeadlineError('Deadline must be at least 5 days from now.');
-        } else if (isEmergency && selectedDate < minDeadlineDate) {
-            setDeadlineError('Emergency deadline must be at least 48 hours from now.');
-        } else {
-            setDeadlineError('');
-        }
+        selectedDate.setHours(0, 0, 0, 0); minDeadlineDate.setHours(0, 0, 0, 0);
+        if (!isEmergency && selectedDate < minDeadlineDate) { setDeadlineError('Deadline must be at least 5 days from now.'); }
+        else if (isEmergency && selectedDate < minDeadlineDate) { setDeadlineError('Emergency deadline must be at least 48 hours from now.'); }
+        else { setDeadlineError(''); }
         setFormData({ ...formData, deadline: e.target.value });
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (deadlineError) { setModalInfo({ children: <p>{deadlineError}</p> }); return; }
         if (!file) { setModalInfo({ children: <p>Please upload your assignment brief.</p> }); return; }
         if (descriptionMode === 'text' && !textDescription.trim()) { setModalInfo({ children: <p>Please provide a written description.</p> }); return; }
         if (descriptionMode === 'audio' && !audioBlob) { setModalInfo({ children: <p>Please record a voice note.</p> }); return; }
-        
         setIsLoading(true);
-
         try {
             const collectionPath = `submissions`;
-            
-            const submissionData = {
-                ...formData,
-                serviceTitle: title,
-                userId,
-                isEmergency,
-                fileName: file.name,
-                fileSize: file.size,
-                descriptionType: descriptionMode,
-                description: descriptionMode === 'text' ? textDescription : 'Audio Note Recorded',
-                hasAudioNote: descriptionMode === 'audio' && !!audioBlob,
-                status: 'submitted',
-                submittedAt: new Date(),
-            };
-
+            const submissionData = { ...formData, serviceTitle: title, userId, isEmergency, fileName: file.name, fileSize: file.size, descriptionType: descriptionMode, description: descriptionMode === 'text' ? textDescription : 'Audio Note Recorded', hasAudioNote: descriptionMode === 'audio' && !!audioBlob, status: 'submitted', submittedAt: new Date() };
             await addDoc(collection(db, collectionPath), submissionData);
-
             setModalInfo({ children: <p>Your request has been submitted successfully! We will contact you shortly.</p> });
             setFormData({ name: '', email: '', whatsapp: '', subject: '', academicLevel: 'Diploma', deadline: '' });
-            setFile(null);
-            setTextDescription('');
-            resetRecording();
-
+            setFile(null); setTextDescription(''); resetRecording();
         } catch (error) {
-            console.error("Error submitting assignment: ", error);
             setModalInfo({ children: <p>There was an error submitting your form. Please try again.</p> });
-        } finally {
-            setIsLoading(false);
-        }
+        } finally { setIsLoading(false); }
     };
-
     const handleFileChange = (e) => { e.target.files[0] && setFile(e.target.files[0]); };
 
     return (
@@ -241,79 +223,14 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
                 <button onClick={() => setPage('home')} className="text-primary hover:underline mb-6 font-semibold">&larr; Back to services</button>
                 <h2 className="text-3xl font-bold text-center text-dark-gray mb-2">{title}</h2>
                 <p className="text-center text-gray-600 mb-8">Please provide the details for your request below.</p>
-
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" placeholder="Full Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                        <input type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="tel" placeholder="WhatsApp Number" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                        <input type="text" placeholder="Subject / Module" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Academic Level</label>
-                        <select value={formData.academicLevel} onChange={(e) => setFormData({...formData, academicLevel: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full bg-white focus:ring-2 focus:ring-primary focus:outline-none">
-                            <option>Diploma</option><option>HND</option><option>BSc</option><option>MSc</option><option>PhD</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
-                        <input type="date" value={formData.deadline} onChange={handleDateChange} required min={getMinDeadline()} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                        {deadlineError && <p className="text-red-500 text-sm mt-1">{deadlineError}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Describe Your Requirements</label>
-                        <div className="flex border border-gray-300 rounded-lg p-1 bg-gray-100">
-                            <button type="button" onClick={() => setDescriptionMode('text')} className={`w-1/2 py-2 rounded-md transition-colors font-medium ${descriptionMode === 'text' ? 'bg-white shadow text-primary' : 'text-gray-600'}`}>Written</button>
-                            <button type="button" onClick={() => setDescriptionMode('audio')} className={`w-1/2 py-2 rounded-md transition-colors font-medium ${descriptionMode === 'audio' ? 'bg-white shadow text-primary' : 'text-gray-600'}`}>Voice Note</button>
-                        </div>
-                        <div className="mt-4">
-                            {descriptionMode === 'text' ? (
-                                <textarea
-                                    value={textDescription}
-                                    onChange={(e) => setTextDescription(e.target.value)}
-                                    rows="4"
-                                    placeholder="Please describe what you need help with..."
-                                    className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"
-                                ></textarea>
-                            ) : (
-                                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 text-center">
-                                    {!isRecording && !audioURL && (
-                                        <button type="button" onClick={handleStartRecording} className="inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">
-                                            <Mic className="w-5 h-5 mr-2"/> Start Recording
-                                        </button>
-                                    )}
-                                    {isRecording && (
-                                        <button type="button" onClick={handleStopRecording} className="inline-flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 animate-pulse font-semibold">
-                                            <StopCircle className="w-5 h-5 mr-2"/> Stop Recording
-                                        </button>
-                                    )}
-                                    {audioURL && !isRecording && (
-                                        <div className="space-y-3">
-                                            <p className="text-sm text-gray-600">Recording complete. You can play it back before submitting.</p>
-                                            <audio src={audioURL} controls className="w-full"></audio>
-                                            <button type="button" onClick={resetRecording} className="inline-flex items-center text-red-600 hover:text-red-800 font-semibold">
-                                                <Trash2 className="w-4 h-4 mr-1"/> Record Again
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Upload Assignment Brief/Guidelines</label>
-                        <label htmlFor="file-upload" className="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                            <UploadCloud className="w-10 h-10 text-gray-400"/>
-                            <p className="mt-2 text-sm text-gray-600">{file ? file.name : 'Click to upload a file'}</p>
-                            <p className="text-xs text-gray-500">PDF, DOCX, PPTX, TXT (MAX. 10MB)</p>
-                        </label>
-                        <input id="file-upload" type="file" onChange={handleFileChange} className="hidden" accept=".pdf,.doc,.docx,.pptx,.txt"/>
-                    </div>
-                    <button type="submit" disabled={isLoading || !!deadlineError} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-lg shadow-md hover:shadow-lg transform hover:-translate-y-1">
-                        {isLoading ? 'Submitting...' : 'Submit Request'}
-                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><input type="text" placeholder="Full Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><input type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><input type="tel" placeholder="WhatsApp Number" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><input type="text" placeholder="Subject / Module" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Academic Level</label><select value={formData.academicLevel} onChange={(e) => setFormData({...formData, academicLevel: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full bg-white focus:ring-2 focus:ring-primary focus:outline-none"><option>Diploma</option><option>HND</option><option>BSc</option><option>MSc</option><option>PhD</option></select></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label><input type="date" value={formData.deadline} onChange={handleDateChange} required min={getMinDeadline()} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>{deadlineError && <p className="text-red-500 text-sm mt-1">{deadlineError}</p>}</div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Describe Your Requirements</label><div className="flex border border-gray-300 rounded-lg p-1 bg-gray-100"><button type="button" onClick={() => setDescriptionMode('text')} className={`w-1/2 py-2 rounded-md transition-colors font-medium ${descriptionMode === 'text' ? 'bg-white shadow text-primary' : 'text-gray-600'}`}>Written</button><button type="button" onClick={() => setDescriptionMode('audio')} className={`w-1/2 py-2 rounded-md transition-colors font-medium ${descriptionMode === 'audio' ? 'bg-white shadow text-primary' : 'text-gray-600'}`}>Voice Note</button></div><div className="mt-4">{descriptionMode === 'text' ? (<textarea value={textDescription} onChange={(e) => setTextDescription(e.target.value)} rows="4" placeholder="Please describe what you need help with..." className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"></textarea>) : (<div className="p-4 border border-gray-200 rounded-lg bg-gray-50 text-center">{!isRecording && !audioURL && (<button type="button" onClick={handleStartRecording} className="inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"><Mic className="w-5 h-5 mr-2"/> Start Recording</button>)}{isRecording && (<button type="button" onClick={handleStopRecording} className="inline-flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 animate-pulse font-semibold"><StopCircle className="w-5 h-5 mr-2"/> Stop Recording</button>)}{audioURL && !isRecording && (<div className="space-y-3"><p className="text-sm text-gray-600">Recording complete. You can play it back before submitting.</p><audio src={audioURL} controls className="w-full"></audio><button type="button" onClick={resetRecording} className="inline-flex items-center text-red-600 hover:text-red-800 font-semibold"><Trash2 className="w-4 h-4 mr-1"/> Record Again</button></div>)}</div>)}</div></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Upload Assignment Brief/Guidelines</label><label htmlFor="file-upload" className="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"><UploadCloud className="w-10 h-10 text-gray-400"/><p className="mt-2 text-sm text-gray-600">{file ? file.name : 'Click to upload a file'}</p><p className="text-xs text-gray-500">PDF, DOCX, PPTX, TXT (MAX. 10MB)</p></label><input id="file-upload" type="file" onChange={handleFileChange} className="hidden" accept=".pdf,.doc,.docx,.pptx,.txt"/></div>
+                    <button type="submit" disabled={isLoading || !!deadlineError} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-lg shadow-md hover:shadow-lg transform hover:-translate-y-1">{isLoading ? 'Submitting...' : 'Submit Request'}</button>
                 </form>
             </div>
         </div>
@@ -334,7 +251,6 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
 
     useEffect(() => {
         if (!db || !selectedDate) return;
-        
         const fetchBookedSlots = async () => {
             const appId = firebaseConfig.appId || 'default-app-id';
             const collectionPath = `/artifacts/${appId}/public/data/bookings`;
@@ -343,186 +259,72 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
             const slots = querySnapshot.docs.map(doc => doc.data().time);
             setBookedSlots(slots);
         };
-        
         fetchBookedSlots();
     }, [db, selectedDate]);
 
-    const changeMonth = (amount) => {
-        setCurrentDate(prev => {
-            const newDate = new Date(prev);
-            newDate.setMonth(prev.getMonth() + amount);
-            return newDate;
-        });
-    };
-
-    const handleDateClick = (day) => {
-        if (day < new Date().getDate() && currentDate.getMonth() === new Date().getMonth()) return;
-        const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        setSelectedDate(newSelectedDate);
-        setSelectedTime(null);
-    };
-    
-    const handleTimeSelect = (time) => {
-        setSelectedTime(time);
-        setModalContent("form");
-    };
-
+    const changeMonth = (amount) => { setCurrentDate(prev => { const newDate = new Date(prev); newDate.setMonth(prev.getMonth() + amount); return newDate; }); };
+    const handleDateClick = (day) => { if (day < new Date().getDate() && currentDate.getMonth() === new Date().getMonth()) return; const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day); setSelectedDate(newSelectedDate); setSelectedTime(null); };
+    const handleTimeSelect = (time) => { setSelectedTime(time); setModalContent("form"); };
     const handleBookingSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
+        e.preventDefault(); setIsLoading(true);
         try {
             const appId = firebaseConfig.appId || 'default-app-id';
             const collectionPath = `/artifacts/${appId}/public/data/bookings`;
             const docId = `${selectedDate.toISOString().split('T')[0]}_${selectedTime}`;
-            
-            await setDoc(doc(db, collectionPath, docId), {
-                title,
-                date: selectedDate.toISOString().split('T')[0],
-                time: selectedTime,
-                name: bookingDetails.name,
-                email: bookingDetails.email,
-                userId,
-                bookedAt: new Date(),
-            });
-
+            await setDoc(doc(db, collectionPath, docId), { title, date: selectedDate.toISOString().split('T')[0], time: selectedTime, name: bookingDetails.name, email: bookingDetails.email, userId, bookedAt: new Date() });
             setBookedSlots([...bookedSlots, selectedTime]);
             setModalContent("success");
-
         } catch (error) {
-            console.error("Error creating booking:", error);
             setModalContent("error");
-        } finally {
-            setIsLoading(false);
-        }
+        } finally { setIsLoading(false); }
     };
 
     const renderCalendar = () => {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const today = new Date();
-
-        const blanks = Array(firstDay).fill(null);
-        const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
+        const year = currentDate.getFullYear(); const month = currentDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const today = new Date(); const blanks = Array(firstDay).fill(null); const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
         return (
             <div className="bg-white p-4 rounded-lg shadow-md">
-                <div className="flex justify-between items-center mb-4">
-                    <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-200"><ChevronLeft /></button>
-                    <h3 className="text-lg font-semibold">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
-                    <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-200"><ChevronRight /></button>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center text-sm">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="font-semibold text-gray-500">{day}</div>)}
-                    {blanks.map((_, i) => <div key={`blank-${i}`}></div>)}
-                    {days.map(day => {
-                        const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                        const isPast = new Date(year, month, day) < new Date(today.toDateString());
-                        const isSelected = selectedDate && day === selectedDate.getDate() && month === selectedDate.getMonth();
-
-                        let dayClass = "p-2 rounded-full cursor-pointer hover:bg-primary-hover hover:text-white";
-                        if (isPast) dayClass += " text-gray-400 cursor-not-allowed";
-                        else if (isSelected) dayClass += " bg-primary text-white";
-                        else if (isToday) dayClass += " bg-secondary text-white";
-
-                        return <div key={day} onClick={() => !isPast && handleDateClick(day)} className={dayClass}>{day}</div>;
-                    })}
-                </div>
+                <div className="flex justify-between items-center mb-4"><button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-200"><ChevronLeft /></button><h3 className="text-lg font-semibold">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3><button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-200"><ChevronRight /></button></div>
+                <div className="grid grid-cols-7 gap-1 text-center text-sm">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="font-semibold text-gray-500">{day}</div>)}{blanks.map((_, i) => <div key={`blank-${i}`}></div>)}{days.map(day => { const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear(); const isPast = new Date(year, month, day) < new Date(today.toDateString()); const isSelected = selectedDate && day === selectedDate.getDate() && month === selectedDate.getMonth(); let dayClass = "p-2 rounded-full cursor-pointer hover:bg-primary-hover hover:text-white"; if (isPast) dayClass += " text-gray-400 cursor-not-allowed"; else if (isSelected) dayClass += " bg-primary text-white"; else if (isToday) dayClass += " bg-secondary text-white"; return <div key={day} onClick={() => !isPast && handleDateClick(day)} className={dayClass}>{day}</div>; })}</div>
             </div>
         );
     };
 
     const renderTimeSlots = () => {
         if (!selectedDate) return <p className="mt-8 text-center text-gray-500">Please select a date to see available times.</p>;
-        
         return (
-            <div className="mt-8">
-                <h3 className="font-semibold text-center mb-4">Available slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {availableTimes.map(time => {
-                        const isBooked = bookedSlots.includes(time);
-                        return (
-                            <button 
-                                key={time} 
-                                disabled={isBooked}
-                                onClick={() => handleTimeSelect(time)}
-                                className={`p-3 rounded-lg font-semibold transition-colors ${isBooked ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'}`}
-                            >
-                                {time}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+            <div className="mt-8"><h3 className="font-semibold text-center mb-4">Available slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3><div className="grid grid-cols-2 md:grid-cols-4 gap-4">{availableTimes.map(time => { const isBooked = bookedSlots.includes(time); return (<button key={time} disabled={isBooked} onClick={() => handleTimeSelect(time)} className={`p-3 rounded-lg font-semibold transition-colors ${isBooked ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'}`}>{time}</button>); })}</div></div>
         );
     };
 
     const renderModalContent = () => {
-        if (modalContent === "form") {
-            return (
-                <div>
-                    <h3 className="text-xl font-bold mb-4">Confirm Your Booking</h3>
-                    <p className="mb-4">You are booking for <span className="font-semibold">{title}</span> on <span className="font-semibold">{selectedDate.toLocaleDateString()}</span> at <span className="font-semibold">{selectedTime}</span>.</p>
-                    <form onSubmit={handleBookingSubmit} className="text-left space-y-4">
-                        <input type="text" placeholder="Full Name" required value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                        <input type="email" placeholder="Email Address" required value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-                        <button type="submit" disabled={isLoading} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400">
-                            {isLoading ? "Booking..." : "Confirm Booking"}
-                        </button>
-                    </form>
-                </div>
-            );
-        }
-        if (modalContent === "success") {
-            return (
-                <div>
-                    <h3 className="text-xl font-bold mb-4 text-green-600">Booking Confirmed!</h3>
-                    <p>Your consultation is booked. You will receive a confirmation email shortly.</p>
-                </div>
-            );
-        }
-        if (modalContent === "error") {
-            return (
-                <div>
-                    <h3 className="text-xl font-bold mb-4 text-red-600">Booking Failed</h3>
-                    <p>Something went wrong. Please try again.</p>
-                </div>
-            );
-        }
+        if (modalContent === "form") { return (<div><h3 className="text-xl font-bold mb-4">Confirm Your Booking</h3><p className="mb-4">You are booking for <span className="font-semibold">{title}</span> on <span className="font-semibold">{selectedDate.toLocaleDateString()}</span> at <span className="font-semibold">{selectedTime}</span>.</p><form onSubmit={handleBookingSubmit} className="text-left space-y-4"><input type="text" placeholder="Full Name" required value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><input type="email" placeholder="Email Address" required value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><button type="submit" disabled={isLoading} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400">{isLoading ? "Booking..." : "Confirm Booking"}</button></form></div>); }
+        if (modalContent === "success") { return (<div><h3 className="text-xl font-bold mb-4 text-green-600">Booking Confirmed!</h3><p>Your consultation is booked. You will receive a confirmation email shortly.</p></div>); }
+        if (modalContent === "error") { return (<div><h3 className="text-xl font-bold mb-4 text-red-600">Booking Failed</h3><p>Something went wrong. Please try again.</p></div>); }
         return null;
     };
 
     return (
-        <div className="bg-light-gray py-12 px-4">
-             <Modal onClose={() => setModalContent(null)}>{renderModalContent()}</Modal>
-            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-8 md:p-12">
-                <button onClick={() => setPage('home')} className="text-primary hover:underline mb-6 font-semibold">&larr; Back to services</button>
-                <h2 className="text-3xl font-bold text-center text-dark-gray mb-8">{title}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {renderCalendar()}
-                    {renderTimeSlots()}
-                </div>
-            </div>
-        </div>
+        <div className="bg-light-gray py-12 px-4"><Modal onClose={() => setModalContent(null)}>{renderModalContent()}</Modal><div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-8 md:p-12"><button onClick={() => setPage('home')} className="text-primary hover:underline mb-6 font-semibold">&larr; Back to services</button><h2 className="text-3xl font-bold text-center text-dark-gray mb-8">{title}</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{renderCalendar()}{renderTimeSlots()}</div></div></div>
     );
 };
 
 
 const AdminDashboard = ({ db }) => {
-    const [view, setView] = useState('assignments'); // 'assignments' or 'bookings'
+    const [view, setView] = useState('assignments');
     const [assignments, setAssignments] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (!db) return;
-        
         setIsLoading(true);
         let unsubscribe;
+        const appId = firebaseConfig.appId || 'default-app-id';
 
         if (view === 'assignments') {
-            const appId = firebaseConfig.appId || 'default-app-id';
             const collectionPath = `/artifacts/${appId}/public/data/submissions`;
             const q = query(collection(db, collectionPath));
             unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -531,8 +333,7 @@ const AdminDashboard = ({ db }) => {
                 setAssignments(data);
                 setIsLoading(false);
             });
-        } else { // view === 'bookings'
-            const appId = firebaseConfig.appId || 'default-app-id';
+        } else if (view === 'bookings') {
             const collectionPath = `/artifacts/${appId}/public/data/bookings`;
             const q = query(collection(db, collectionPath));
             unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -541,64 +342,47 @@ const AdminDashboard = ({ db }) => {
                 setBookings(data);
                 setIsLoading(false);
             });
+        } else { // view === 'users'
+            const collectionPath = `/artifacts/${appId}/public/data/users`;
+            const q = query(collection(db, collectionPath));
+            unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                data.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+                setUsers(data);
+                setIsLoading(false);
+            });
         }
         
         return () => unsubscribe();
-
     }, [db, view]);
 
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6 text-dark-gray">Admin Dashboard</h1>
-            
             <div className="flex border-b mb-6">
-                <button onClick={() => setView('assignments')} className={`py-2 px-4 font-semibold ${view === 'assignments' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Assignment Submissions</button>
-                <button onClick={() => setView('bookings')} className={`py-2 px-4 font-semibold ${view === 'bookings' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Consultation Bookings</button>
+                <button onClick={() => setView('assignments')} className={`py-2 px-4 font-semibold ${view === 'assignments' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Submissions</button>
+                <button onClick={() => setView('bookings')} className={`py-2 px-4 font-semibold ${view === 'bookings' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Bookings</button>
+                <button onClick={() => setView('users')} className={`py-2 px-4 font-semibold ${view === 'users' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Users</button>
             </div>
-
             <div className="bg-white shadow-md rounded-lg overflow-x-auto">
                 {isLoading ? ( <p className="p-4 text-center">Loading...</p> ) : 
                  view === 'assignments' ? (
                     assignments.length === 0 ? <p className="p-4 text-center">No assignments submitted yet.</p> :
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {assignments.map(job => (
-                                <tr key={job.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{job.serviceTitle}</div>{job.isEmergency && <span className='text-xs text-red-600 font-bold'>EMERGENCY</span>}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{job.name}</div><div className="text-sm text-gray-500">{job.email}</div></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{job.subject}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{job.deadline}</td>
-                                </tr>
-                            ))}
-                        </tbody>
+                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th></tr></thead>
+                        <tbody className="bg-white divide-y divide-gray-200">{assignments.map(job => (<tr key={job.id}><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{job.serviceTitle}</div>{job.isEmergency && <span className='text-xs text-red-600 font-bold'>EMERGENCY</span>}</td><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{job.name}</div><div className="text-sm text-gray-500">{job.email}</div></td><td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{job.subject}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{job.deadline}</td></tr>))}</tbody>
                     </table>
-                 ) : ( // view === 'bookings'
+                 ) : view === 'bookings' ? (
                     bookings.length === 0 ? <p className="p-4 text-center">No bookings yet.</p> :
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {bookings.map(book => (
-                                <tr key={book.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.date}</div><div className="text-sm text-gray-500">{book.time}</div></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{book.title}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.name}</div><div className="text-sm text-gray-500">{book.email}</div></td>
-                                </tr>
-                            ))}
-                        </tbody>
+                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th></tr></thead>
+                        <tbody className="bg-white divide-y divide-gray-200">{bookings.map(book => (<tr key={book.id}><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.date}</div><div className="text-sm text-gray-500">{book.time}</div></td><td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{book.title}</td><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.name}</div><div className="text-sm text-gray-500">{book.email}</div></td></tr>))}</tbody>
+                    </table>
+                 ) : ( // view === 'users'
+                    users.length === 0 ? <p className="p-4 text-center">No users registered yet.</p> :
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered On</th></tr></thead>
+                        <tbody className="bg-white divide-y divide-gray-200">{users.map(user => (<tr key={user.id}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-gray">{user.email}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.createdAt.toDate().toLocaleString()}</td></tr>))}</tbody>
                     </table>
                  )
                 }
@@ -607,34 +391,81 @@ const AdminDashboard = ({ db }) => {
     );
 };
 
-const PlaceholderPage = ({ title, message, setPage }) => (
-    <div className="flex-grow flex flex-col items-center justify-center text-center bg-light-gray p-6">
-        <h2 className="text-3xl font-bold text-dark-gray">{title}</h2>
-        <p className="mt-4 text-gray-600 max-w-md">{message}</p>
-        <button onClick={() => setPage('home')} className="mt-8 bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-hover transition-colors shadow-md hover:shadow-lg">
-            Back to Home
-        </button>
-    </div>
-);
+const AuthPage = ({ title, handleSubmit, isLogin, setPage }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setIsLoading(true);
+        try {
+            await handleSubmit(email, password);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex-grow flex items-center justify-center bg-light-gray p-4">
+            <div className="w-full max-w-md">
+                <form onSubmit={handleFormSubmit} className="bg-white shadow-2xl rounded-2xl px-8 pt-10 pb-10 mb-4">
+                    <h2 className="text-3xl font-bold text-center text-dark-gray mb-8">{title}</h2>
+                    {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center">{error}</p>}
+                    <div className="mb-6">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
+                        <input className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" id="email" type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </div>
+                    <div className="mb-8">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
+                        <input className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" id="password" type="password" placeholder="******************" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <button className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors" type="submit" disabled={isLoading}>
+                            {isLoading ? 'Processing...' : title}
+                        </button>
+                    </div>
+                    <p className="text-center text-gray-500 text-sm mt-8">
+                        {isLogin ? "Don't have an account? " : "Already have an account? "}
+                        <button type="button" onClick={() => setPage(isLogin ? 'signup' : 'login')} className="font-bold text-primary hover:text-primary-hover">
+                            {isLogin ? "Sign Up" : "Login"}
+                        </button>
+                    </p>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const ProfilePage = ({ user, auth, setPage }) => {
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            setPage('home');
+        } catch (error) {
+            console.error("Error signing out: ", error);
+        }
+    };
+
+    return (
+        <div className="container mx-auto p-6">
+            <h1 className="text-3xl font-bold mb-6 text-dark-gray">Your Profile</h1>
+            <div className="bg-white p-8 rounded-xl shadow-lg">
+                <p className="text-lg mb-4"><strong>Email:</strong> {user.email}</p>
+                <button onClick={handleLogout} className="bg-red-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition-colors">Logout</button>
+            </div>
+        </div>
+    );
+};
 
 const ConfigWarningPage = () => (
     <div className="flex-grow flex items-center justify-center bg-light-gray p-4">
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-6 rounded-lg shadow-md max-w-2xl w-full">
-            <div className="flex">
-                <div className="py-1"><AlertTriangle className="h-6 w-6 text-yellow-500 mr-4"/></div>
-                <div>
-                    <p className="font-bold text-lg">Action Required: Add Firebase Configuration</p>
-                    <p className="text-sm mt-2">This application cannot connect to the database because the Firebase configuration is missing.</p>
-                    <ol className="list-decimal list-inside mt-4 text-left text-sm space-y-2">
-                        <li>Go to the <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-yellow-800">Firebase Console</a> and create a new project.</li>
-                        <li>In your project, add a new Web App (click the <strong>&lt;/&gt;</strong> icon).</li>
-                        <li>Firebase will give you a `firebaseConfig` object. Copy this entire object.</li>
-                        <li>Open the `src/App.js` file in your code editor.</li>
-                        <li>Paste your copied `firebaseConfig` object at the top of the file, replacing the placeholder.</li>
-                        <li>Save the file. The app will automatically reload.</li>
-                    </ol>
-                </div>
-            </div>
+            <div className="flex"><div className="py-1"><AlertTriangle className="h-6 w-6 text-yellow-500 mr-4"/></div><div><p className="font-bold text-lg">Action Required: Add Firebase Configuration</p><p className="text-sm mt-2">This application cannot connect to the database because the Firebase configuration is missing.</p><ol className="list-decimal list-inside mt-4 text-left text-sm space-y-2"><li>Go to the <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-yellow-800">Firebase Console</a> and create a new project.</li><li>In your project, add a new Web App (click the <strong>&lt;/&gt;</strong> icon).</li><li>Firebase will give you a `firebaseConfig` object. Copy this entire object.</li><li>Open the `src/App.js` file in your code editor.</li><li>Paste your copied `firebaseConfig` object at the top of the file, replacing the placeholder.</li><li>Save the file. The app will automatically reload.</li></ol></div></div>
         </div>
     </div>
 );
@@ -647,17 +478,13 @@ function App() {
     const [pageProps, setPageProps] = useState({});
     const [db, setDb] = useState(null);
     const [auth, setAuth] = useState(null);
-    const [userId, setUserId] = useState(null);
+    const [user, setUser] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [isConfigValid, setIsConfigValid] = useState(false);
 
     useEffect(() => {
         try {
-            if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                console.error("Firebase config is missing or incomplete. Please paste your config object at the top of App.js");
-                setIsConfigValid(false);
-                return;
-            }
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") { setIsConfigValid(false); return; }
             setIsConfigValid(true);
             const app = initializeApp(firebaseConfig);
             const firestoreDb = getFirestore(app);
@@ -665,26 +492,15 @@ function App() {
             setDb(firestoreDb);
             setAuth(firebaseAuth);
             setLogLevel('debug');
-        } catch (error) { 
-            console.error("Firebase initialization error:", error);
-            setIsConfigValid(false);
-        }
+        } catch (error) { setIsConfigValid(false); }
     }, []);
     
     useEffect(() => {
         if (!isConfigValid || !auth) return;
-        
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setUserId(user.uid);
-            } else {
-                signInAnonymously(auth).catch((error) => {
-                    console.error("Failed to sign in anonymously:", error);
-                });
-            }
+            setUser(user);
             setIsAuthReady(true);
         });
-
         return () => unsubscribe();
     }, [auth, isConfigValid]);
 
@@ -693,32 +509,41 @@ function App() {
         setPageProps(props);
     }, []);
 
+    const handleSignup = async (email, password) => {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const appId = firebaseConfig.appId || 'default-app-id';
+        const collectionPath = `/artifacts/${appId}/public/data/users`;
+        await setDoc(doc(db, collectionPath, userCredential.user.uid), {
+            email: userCredential.user.email,
+            createdAt: new Date(),
+        });
+        setPage('home');
+    };
+
+    const handleLogin = async (email, password) => {
+        await signInWithEmailAndPassword(auth, email, password);
+        setPage('home');
+    };
+
     const renderPage = () => {
-        if (!isConfigValid) {
-            return <ConfigWarningPage />;
-        }
-        if (!isAuthReady) {
-            return <div className="flex-grow flex items-center justify-center"><p>Initializing...</p></div>;
-        }
+        if (!isConfigValid) return <ConfigWarningPage />;
+        if (!isAuthReady) return <div className="flex-grow flex items-center justify-center"><p>Initializing...</p></div>;
+
         switch (page) {
-            case 'home':
-                return <HomePage setPage={setPage} />;
-            case 'assignmentForm':
-                return <AssignmentForm db={db} userId={userId} setPage={setPage} {...pageProps} />;
-            case 'dashboard':
-                 return <AdminDashboard db={db} />;
-            case 'consultation':
-                return <ConsultationBooking db={db} userId={userId} setPage={setPage} {...pageProps} />;
-            case 'profile':
-                return <PlaceholderPage title="Your Profile" message={`Your user ID is: ${userId}. Full profile features, including your submission history, will be available here soon.`} setPage={setPage} />;
-            default:
-                return <HomePage setPage={setPage} />;
+            case 'home': return <HomePage setPage={setPage} />;
+            case 'assignmentForm': return <AssignmentForm db={db} userId={user?.uid} setPage={setPage} {...pageProps} />;
+            case 'dashboard': return user ? <AdminDashboard db={db} /> : <AuthPage title="Admin Login" handleSubmit={handleLogin} isLogin={true} setPage={setPage} />;
+            case 'consultation': return <ConsultationBooking db={db} userId={user?.uid} setPage={setPage} {...pageProps} />;
+            case 'profile': return user ? <ProfilePage user={user} auth={auth} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} isLogin={true} setPage={setPage} />;
+            case 'login': return <AuthPage title="Login" handleSubmit={handleLogin} isLogin={true} setPage={setPage} />;
+            case 'signup': return <AuthPage title="Sign Up" handleSubmit={handleSignup} isLogin={false} setPage={setPage} />;
+            default: return <HomePage setPage={setPage} />;
         }
     };
 
     return (
         <div className="flex flex-col min-h-screen bg-light-gray font-sans">
-            <Header setPage={setPage} userId={userId} />
+            <Header setPage={setPage} user={user} auth={auth} />
             <main className="flex-grow flex flex-col">
                 {renderPage()}
             </main>
