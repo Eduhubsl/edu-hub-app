@@ -5,12 +5,12 @@ import { getFirestore, collection, addDoc, onSnapshot, query, setLogLevel } from
 
 // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCek7i7cjQaAgERLgfhgTDPRgwCikEra-4",
+  authDomain: "edu-hub-app.firebaseapp.com",
+  projectId: "edu-hub-app",
+  storageBucket: "edu-hub-app.firebasestorage.app",
+  messagingSenderId: "593499285654",
+  appId: "1:593499285654:web:694c7cf80dbe47aa403ab7"
 };
 // ---------------------------------------------
 
@@ -540,5 +540,4 @@ export default function App() {
                 <p>&copy; {new Date().getFullYear()} Edu-Hub. All Rights Reserved.</p>
             </footer>
         </div>
-    );
-}
+    )
