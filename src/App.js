@@ -483,6 +483,7 @@ function App() {
     const [pageProps, setPageProps] = useState({});
     const [db, setDb] = useState(null);
     const [auth, setAuth] = useState(null);
+    const [storage, setStorage] = useState(null);
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
@@ -495,8 +496,10 @@ function App() {
             const app = initializeApp(firebaseConfig);
             const firestoreDb = getFirestore(app);
             const firebaseAuth = getAuth(app);
+            const firebaseStorage = getStorage(app);
             setDb(firestoreDb);
             setAuth(firebaseAuth);
+            setStorage(firebaseStorage);
         } catch (error) { setIsConfigValid(false); }
     }, []);
     
@@ -566,9 +569,9 @@ function App() {
             case 'home': return <HomePage setPage={setPage} />;
             case 'assignmentForm': return user ? <AssignmentForm db={db} userId={user?.uid} setPage={setPage} {...pageProps} /> : <AuthPage title="Login to Submit" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'consultation': return user ? <ConsultationBooking db={db} userId={user?.uid} setPage={setPage} {...pageProps} /> : <AuthPage title="Login to Book" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
-            case 'dashboard': return userData?.isAdmin ? <AdminDashboard db={db} /> : <UserDashboard user={user} db={db} setPage={setPage} />;
-            case 'userDashboard': return user ? <UserDashboard user={user} db={db} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
-            case 'profile': return user ? <UserDashboard user={user} db={db} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
+            case 'dashboard': return userData?.isAdmin ? <AdminDashboard db={db} storage={storage} /> : <UserDashboard user={user} db={db} storage={storage} setPage={setPage} />;
+            case 'userDashboard': return user ? <UserDashboard user={user} db={db} storage={storage} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
+            case 'profile': return user ? <UserDashboard user={user} db={db} storage={storage} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'login': return <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'signup': return <AuthPage title="Sign Up" handleSubmit={handleSignup} handleGoogleSignIn={handleGoogleSignIn} isLogin={false} setPage={setPage} />;
             default: return <HomePage setPage={setPage} />;
