@@ -75,15 +75,10 @@ const Header = ({ setPage, userId }) => (
     <header className="bg-white shadow-sm sticky top-0 z-40">
         <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
             <div 
-                className="cursor-pointer"
+                className="cursor-pointer text-3xl font-extrabold text-dark-gray"
                 onClick={() => setPage('home')}
             >
-                <img 
-                    src="https://i.imgur.com/xQ9gJg3.png" 
-                    alt="Edu-Hub Logo" 
-                    className="h-12 md:h-14"
-                    onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/200x50/1a237e/FFFFFF?text=Edu-Hub'; }}
-                />
+                Edu-<span className="text-primary">Hub</span>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
                 {userId && (
@@ -96,8 +91,6 @@ const Header = ({ setPage, userId }) => (
 );
 
 const HomePage = ({ setPage }) => {
-    // This is the only part that has changed.
-    // We are now using inline styles to set the color, which is guaranteed to work.
     const services = [
         { title: "Standard Assignment Help", icon: <BookOpen className="w-12 h-12" style={{ color: '#1a237e' }}/>, page: 'assignmentForm', props: { isEmergency: false, title: "Standard Assignment Help" }, description: "Expert help with your assignments. Standard delivery with a minimum 5-day deadline." },
         { title: "Emergency Assignment Help", icon: <Zap className="w-12 h-12" style={{ color: '#ef4444' }}/>, page: 'assignmentForm', props: { isEmergency: true, title: "Emergency Assignment Help" }, description: "Urgent deadline? Our emergency service delivers within 48 hours. Subject to review." },
@@ -452,7 +445,7 @@ const ConfigWarningPage = () => (
 
 // --- Main App Component ---
 
-export default function App() {
+function App() {
     const [page, setPageState] = useState('home');
     const [pageProps, setPageProps] = useState({});
     const [db, setDb] = useState(null);
@@ -540,4 +533,7 @@ export default function App() {
                 <p>&copy; {new Date().getFullYear()} Edu-Hub. All Rights Reserved.</p>
             </footer>
         </div>
-    )
+    );
+}
+
+export default App;
