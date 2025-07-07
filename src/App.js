@@ -557,6 +557,7 @@ function App() {
     }, []);
     
     const createUserProfile = useCallback(async (user) => {
+        if (!db) return;
         const userDocRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
@@ -596,12 +597,12 @@ function App() {
     const handleSignup = async (email, password) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await createUserProfile(userCredential.user);
-        setPage('userDashboard');
+        setPage('dashboard');
     };
 
     const handleLogin = async (email, password) => {
         await signInWithEmailAndPassword(auth, email, password);
-        setPage('userDashboard');
+        setPage('dashboard');
     };
     
     const handleGoogleSignIn = async () => {
@@ -609,7 +610,7 @@ function App() {
         try {
             const result = await signInWithPopup(auth, provider);
             await createUserProfile(result.user);
-            setPage('userDashboard');
+            setPage('dashboard');
         } catch (error) {
             console.error("Google sign-in error", error);
         }
@@ -625,7 +626,6 @@ function App() {
             case 'consultation': return user ? <ConsultationBooking db={db} userId={user?.uid} setPage={setPage} {...pageProps} /> : <AuthPage title="Login to Book" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'dashboard': return userData?.isAdmin ? <AdminDashboard db={db} storage={storage} /> : <UserDashboard user={user} db={db} storage={storage} setPage={setPage} />;
             case 'userDashboard': return user ? <UserDashboard user={user} db={db} storage={storage} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
-            case 'profile': return user ? <UserDashboard user={user} db={db} storage={storage} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'login': return <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'signup': return <AuthPage title="Sign Up" handleSubmit={handleSignup} handleGoogleSignIn={handleGoogleSignIn} isLogin={false} setPage={setPage} />;
             default: return <HomePage setPage={setPage} />;
