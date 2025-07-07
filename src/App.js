@@ -574,11 +574,16 @@ function App() {
         if (!isConfigValid || !auth || !db) return;
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                await createUserProfile(user); 
+                // await createUserProfile(user); // This line is now called after login/signup
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
                     setUserData(docSnap.data());
+                } else {
+                    // This can happen if the user exists in Auth but not Firestore yet
+                    await createUserProfile(user);
+                    const newUserDocSnap = await getDoc(userDocRef);
+                    if(newUserDocSnap.exists()) setUserData(newUserDocSnap.data());
                 }
             } else {
                 setUserData(null);
@@ -624,8 +629,9 @@ function App() {
             case 'home': return <HomePage setPage={setPage} />;
             case 'assignmentForm': return user ? <AssignmentForm db={db} userId={user?.uid} setPage={setPage} {...pageProps} /> : <AuthPage title="Login to Submit" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'consultation': return user ? <ConsultationBooking db={db} userId={user?.uid} setPage={setPage} {...pageProps} /> : <AuthPage title="Login to Book" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
-            case 'dashboard': return userData?.isAdmin ? <AdminDashboard db={db} storage={storage} /> : <UserDashboard user={user} db={db} storage={storage} setPage={setPage} />;
-            case 'userDashboard': return user ? <UserDashboard user={user} db={db} storage={storage} setPage={setPage} /> : <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
+            case 'dashboard': 
+                if (!user) return <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
+                return userData?.isAdmin ? <AdminDashboard db={db} storage={storage} /> : <UserDashboard user={user} db={db} storage={storage} setPage={setPage} />;
             case 'login': return <AuthPage title="Login" handleSubmit={handleLogin} handleGoogleSignIn={handleGoogleSignIn} isLogin={true} setPage={setPage} />;
             case 'signup': return <AuthPage title="Sign Up" handleSubmit={handleSignup} handleGoogleSignIn={handleGoogleSignIn} isLogin={false} setPage={setPage} />;
             default: return <HomePage setPage={setPage} />;
