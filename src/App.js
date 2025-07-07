@@ -23,6 +23,14 @@ import {
     updateDoc,
     deleteDoc
 } from 'firebase/firestore';
+import {
+    getStorage,
+    ref,
+    uploadBytesResumable,
+    getDownloadURL,
+    listAll
+} from 'firebase/storage';
+
 
 // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
 const firebaseConfig = {
