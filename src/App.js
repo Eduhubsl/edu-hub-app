@@ -287,36 +287,59 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
 };
 
 
-const AdminDashboard = ({ db }) => {
+const AdminDashboard = ({ db, storage }) => {
     const [view, setView] = useState('users');
     const [assignments, setAssignments] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterDate, setFilterDate] = useState('');
+    const [uploadTargetUser, setUploadTargetUser] = useState(null);
+    const [fileToUpload, setFileToUpload] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         if (!db) return;
         setIsLoading(true);
-        let q = query(collection(db, view));
-        
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (view === 'users') {
-                 data.sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
-                 setUsers(data);
-            } else if (view === 'assignments') {
-                data.sort((a, b) => (b.submittedAt?.toDate() || 0) - (a.submittedAt?.toDate() || 0));
-                setAssignments(data);
-            } else if (view === 'bookings') {
-                data.sort((a, b) => new Date(b.date) - new Date(a.date));
-                setBookings(data);
-            }
-            setIsLoading(false);
+        const collections = ['users', 'assignments', 'bookings'];
+        const unsubscribes = collections.map(col => {
+            const q = query(collection(db, col));
+            return onSnapshot(q, (querySnapshot) => {
+                const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (col === 'users') setUsers(data.sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0)));
+                if (col === 'assignments') setAssignments(data.sort((a, b) => (b.submittedAt?.toDate() || 0) - (a.submittedAt?.toDate() || 0)));
+                if (col === 'bookings') setBookings(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+            });
         });
-        
-        return () => unsubscribe();
-    }, [db, view]);
+        setIsLoading(false);
+        return () => unsubscribes.forEach(unsub => unsub());
+    }, [db]);
+
+    const handleFileUpload = () => {
+        if (!fileToUpload || !uploadTargetUser) return;
+        const storageRef = ref(storage, `user-documents/${uploadTargetUser.id}/${fileToUpload.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, fileToUpload);
+
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            }, 
+            (error) => {
+                console.error("Upload failed:", error);
+                setUploadTargetUser(null);
+                setUploadProgress(0);
+            }, 
+            () => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    console.log('File available at', downloadURL);
+                    setUploadTargetUser(null);
+                    setFileToUpload(null);
+                    setUploadProgress(0);
+                });
+            }
+        );
+    };
 
     const downloadCSV = (data, filename) => {
         if (data.length === 0) return;
@@ -336,6 +359,16 @@ const AdminDashboard = ({ db }) => {
 
     return (
         <div className="container mx-auto p-6">
+            <Modal onClose={() => setUploadTargetUser(null)}>
+                {uploadTargetUser && (
+                    <div>
+                        <h3 className="text-xl font-bold mb-4">Upload Document for {uploadTargetUser.email}</h3>
+                        <input type="file" onChange={(e) => setFileToUpload(e.target.files[0])} className="mb-4 w-full border p-2 rounded-lg" />
+                        {uploadProgress > 0 && <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4"><div className="bg-primary h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div></div>}
+                        <button onClick={handleFileUpload} disabled={!fileToUpload} className="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary-hover disabled:bg-gray-400">Upload</button>
+                    </div>
+                )}
+            </Modal>
             <h1 className="text-3xl font-bold mb-6 text-dark-gray">Admin Dashboard</h1>
             <div className="flex border-b mb-6">
                 <button onClick={() => setView('users')} className={`py-2 px-4 font-semibold ${view === 'users' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Users ({users.length})</button>
@@ -361,8 +394,8 @@ const AdminDashboard = ({ db }) => {
                  view === 'users' ? (
                     users.length === 0 ? <p className="p-4 text-center">No users registered yet.</p> :
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered On</th></tr></thead>
-                        <tbody className="bg-white divide-y divide-gray-200">{users.map(user => (<tr key={user.id}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-gray">{user.email}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.name || 'N/A'}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.createdAt?.toDate().toLocaleString() || 'N/A'}</td></tr>))}</tbody>
+                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered On</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th></tr></thead>
+                        <tbody className="bg-white divide-y divide-gray-200">{users.map(user => (<tr key={user.id}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-gray">{user.email}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.name || 'N/A'}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.createdAt?.toDate().toLocaleString() || 'N/A'}</td><td className="px-6 py-4 whitespace-nowrap text-sm font-medium"><button onClick={() => setUploadTargetUser(user)} className="text-primary hover:underline">Upload Doc</button></td></tr>))}</tbody>
                     </table>
                  ) : view === 'assignments' ? (
                     assignments.length === 0 ? <p className="p-4 text-center">No assignments submitted yet.</p> :
@@ -400,22 +433,34 @@ const AuthPage = ({ title, handleSubmit, handleGoogleSignIn, isLogin, setPage })
     );
 };
 
-const UserDashboard = ({ user, db, setPage }) => {
+const UserDashboard = ({ user, db, storage, setPage }) => {
     const [profile, setProfile] = useState({ name: '', phone: '' });
+    const [documents, setDocuments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchUserData = async () => {
+            // Fetch profile
             const userDocRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(userDocRef);
             if (docSnap.exists()) {
                 setProfile(docSnap.data());
             }
+
+            // Fetch documents
+            const docsListRef = ref(storage, `user-documents/${user.uid}`);
+            const res = await listAll(docsListRef);
+            const userDocs = await Promise.all(res.items.map(async (itemRef) => {
+                const url = await getDownloadURL(itemRef);
+                return { name: itemRef.name, url };
+            }));
+            setDocuments(userDocs);
+
             setIsLoading(false);
         };
-        fetchProfile();
-    }, [db, user.uid]);
+        fetchUserData();
+    }, [db, user.uid, storage]);
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
@@ -444,7 +489,18 @@ const UserDashboard = ({ user, db, setPage }) => {
                     </div>
                      <div className="bg-white p-8 rounded-xl shadow-lg">
                         <h2 className="text-2xl font-bold mb-4">My Documents</h2>
-                        <p className="text-gray-500">Documents uploaded by the admin will appear here.</p>
+                        {documents.length > 0 ? (
+                            <ul className="space-y-3">
+                                {documents.map((doc, index) => (
+                                    <li key={index} className="flex justify-between items-center p-3 bg-light-gray rounded-lg">
+                                        <span className="text-dark-gray">{doc.name}</span>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="bg-primary text-white font-semibold py-1 px-3 rounded-lg hover:bg-primary-hover">Download</a>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">Documents uploaded by the admin will appear here.</p>
+                        )}
                     </div>
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-lg">
@@ -506,8 +562,8 @@ function App() {
     useEffect(() => {
         if (!isConfigValid || !auth) return;
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setUser(user);
             if (user) {
+                await createUserProfile(user); // Ensure profile exists on every auth change
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
@@ -516,6 +572,7 @@ function App() {
             } else {
                 setUserData(null);
             }
+            setUser(user);
             setIsAuthReady(true);
         });
         return () => unsubscribe();
