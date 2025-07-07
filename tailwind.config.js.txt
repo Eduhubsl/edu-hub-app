@@ -1,0 +1,16 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  // This new 'safelist' uses a pattern to catch all text colors.
+  safelist: [
+    {
+      pattern: /text-(blue|red|yellow|green|purple|indigo)-[0-9]{2,3}/,
+    },
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
