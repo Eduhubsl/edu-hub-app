@@ -1,34 +1,18 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, onSnapshot, query, setLogLevel } from 'firebase/firestore';
 
 // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
-=======
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
 const firebaseConfig = {
-  apiKey: "AIzaSyCek7i7cjQaAgERLgfhgTDPRgwCikEra-4",
-  authDomain: "edu-hub-app.firebaseapp.com",
-  projectId: "edu-hub-app",
-  storageBucket: "edu-hub-app.firebasestorage.app",
-  messagingSenderId: "593499285654",
-  appId: "1:593499285654:web:694c7cf80dbe47aa403ab7"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
-<<<<<<< HEAD
 // ---------------------------------------------
-=======
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
 
 // --- Helper Components & Icons ---
 
@@ -66,27 +50,17 @@ const AlertTriangle = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
 );
 
-
 // --- Reusable UI Components ---
 
 const Modal = ({ message, onClose }) => {
     if (!message) return null;
     return (
-<<<<<<< HEAD
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 font-sans">
             <div className="bg-white rounded-lg shadow-xl p-8 w-11/12 max-w-md text-center">
                 <p className="text-lg text-dark-gray mb-6">{message}</p>
                 <button
                     onClick={onClose}
                     className="bg-primary text-white font-bold py-2 px-8 rounded-lg hover:bg-primary-hover transition-all duration-300 shadow-md hover:shadow-lg"
-=======
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-11/12 max-w-md text-center">
-                <p className="text-lg mb-4">{message}</p>
-                <button
-                    onClick={onClose}
-                    className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors"
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                 >
                     Close
                 </button>
@@ -98,13 +72,8 @@ const Modal = ({ message, onClose }) => {
 // --- Main Application Components ---
 
 const Header = ({ setPage, userId }) => (
-<<<<<<< HEAD
     <header className="bg-white shadow-sm sticky top-0 z-40">
         <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-=======
-    <header className="bg-white shadow-md sticky top-0 z-40">
-        <nav className="container mx-auto px-6 py-2 flex justify-between items-center">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
             <div 
                 className="cursor-pointer"
                 onClick={() => setPage('home')}
@@ -112,7 +81,6 @@ const Header = ({ setPage, userId }) => (
                 <img 
                     src="https://i.imgur.com/xQ9gJg3.png" 
                     alt="Edu-Hub Logo" 
-<<<<<<< HEAD
                     className="h-12 md:h-14"
                     onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/200x50/1a237e/FFFFFF?text=Edu-Hub'; }}
                 />
@@ -122,31 +90,21 @@ const Header = ({ setPage, userId }) => (
                     <button onClick={() => setPage('dashboard')} className="hidden sm:block bg-gray-200 text-dark-gray font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Dashboard</button>
                 )}
                 <button onClick={() => setPage('profile')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">Profile</button>
-=======
-                    className="h-12"
-                    onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/200x50/003366/FFFFFF?text=Edu-Hub'; }}
-                />
-            </div>
-            <div>
-                {userId && (
-                    <button onClick={() => setPage('dashboard')} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 mr-2">Dashboard</button>
-                )}
-                <button onClick={() => setPage('profile')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Profile</button>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
             </div>
         </nav>
     </header>
 );
 
 const HomePage = ({ setPage }) => {
+    // This is the only part that has changed.
+    // We are now using inline styles to set the color, which is guaranteed to work.
     const services = [
-<<<<<<< HEAD
-        { title: "Standard Assignment Help", icon: <BookOpen className="w-12 h-12 text-primary"/>, page: 'assignmentForm', props: { isEmergency: false, title: "Standard Assignment Help" }, description: "Expert help with your assignments. Standard delivery with a minimum 5-day deadline." },
-        { title: "Emergency Assignment Help", icon: <Zap className="w-12 h-12 text-red-500"/>, page: 'assignmentForm', props: { isEmergency: true, title: "Emergency Assignment Help" }, description: "Urgent deadline? Our emergency service delivers within 48 hours. Subject to review." },
-        { title: "Research & Dissertation Help", icon: <GraduationCap className="w-12 h-12 text-secondary"/>, page: 'assignmentForm', props: { isEmergency: false, title: "Research & Dissertation Help" }, description: "Comprehensive support for your research papers and dissertations, from proposal to final submission." },
-        { title: "Education Consultation", icon: <CalendarDays className="w-12 h-12 text-primary"/>, page: 'consultation', description: "Schedule a session with our expert consultants to plan your academic future." },
-        { title: "Life Coaching", icon: <HeartHandshake className="w-12 h-12 text-red-500"/>, page: 'coaching', description: "Guidance for university life and career paths. Free for students." },
-        { title: "PhD Scholarship Guidance", icon: <Trophy className="w-12 h-12 text-secondary"/>, page: 'phdGuidance', description: "Get expert advice and assistance in securing your PhD scholarship." },
+        { title: "Standard Assignment Help", icon: <BookOpen className="w-12 h-12" style={{ color: '#1a237e' }}/>, page: 'assignmentForm', props: { isEmergency: false, title: "Standard Assignment Help" }, description: "Expert help with your assignments. Standard delivery with a minimum 5-day deadline." },
+        { title: "Emergency Assignment Help", icon: <Zap className="w-12 h-12" style={{ color: '#ef4444' }}/>, page: 'assignmentForm', props: { isEmergency: true, title: "Emergency Assignment Help" }, description: "Urgent deadline? Our emergency service delivers within 48 hours. Subject to review." },
+        { title: "Research & Dissertation Help", icon: <GraduationCap className="w-12 h-12" style={{ color: '#f9a825' }}/>, page: 'assignmentForm', props: { isEmergency: false, title: "Research & Dissertation Help" }, description: "Comprehensive support for your research papers and dissertations, from proposal to final submission." },
+        { title: "Education Consultation", icon: <CalendarDays className="w-12 h-12" style={{ color: '#1a237e' }}/>, page: 'consultation', description: "Schedule a session with our expert consultants to plan your academic future." },
+        { title: "Life Coaching", icon: <HeartHandshake className="w-12 h-12" style={{ color: '#ef4444' }}/>, page: 'coaching', description: "Guidance for university life and career paths. Free for students." },
+        { title: "PhD Scholarship Guidance", icon: <Trophy className="w-12 h-12" style={{ color: '#f9a825' }}/>, page: 'phdGuidance', description: "Get expert advice and assistance in securing your PhD scholarship." },
     ];
 
     return (
@@ -163,28 +121,10 @@ const HomePage = ({ setPage }) => {
             </div>
             <div className="container mx-auto px-6 py-20">
                 <h2 className="text-3xl font-bold text-center text-dark-gray mb-12">Our Services</h2>
-=======
-        { title: "Standard Assignment Help", icon: <BookOpen className="w-12 h-12 mx-auto text-blue-600"/>, page: 'assignmentForm', props: { isEmergency: false, title: "Standard Assignment Help" }, description: "Expert help with your assignments. Standard delivery with a minimum 5-day deadline." },
-        { title: "Emergency Assignment Help", icon: <Zap className="w-12 h-12 mx-auto text-red-500"/>, page: 'assignmentForm', props: { isEmergency: true, title: "Emergency Assignment Help" }, description: "Urgent deadline? Our emergency service delivers within 48 hours. Subject to review." },
-        { title: "Research & Dissertation Help", icon: <GraduationCap className="w-12 h-12 mx-auto text-yellow-600"/>, page: 'assignmentForm', props: { isEmergency: false, title: "Research & Dissertation Help" }, description: "Comprehensive support for your research papers and dissertations, from proposal to final submission." },
-        { title: "Education Consultation", icon: <CalendarDays className="w-12 h-12 mx-auto text-green-600"/>, page: 'consultation', description: "Schedule a session with our expert consultants to plan your academic future." },
-        { title: "Life Coaching", icon: <HeartHandshake className="w-12 h-12 mx-auto text-purple-600"/>, page: 'coaching', description: "Guidance for university life and career paths. Free for students." },
-        { title: "PhD Scholarship Guidance", icon: <Trophy className="w-12 h-12 mx-auto text-indigo-600"/>, page: 'phdGuidance', description: "Get expert advice and assistance in securing your PhD scholarship." },
-    ];
-
-    return (
-        <div className="flex-grow bg-gray-50">
-            <div className="text-center py-16 px-4">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">Your Academic Success Partner</h1>
-                <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">From complex assignments to life-changing decisions, we're here to guide you every step of the way.</p>
-            </div>
-            <div className="container mx-auto px-6 pb-16">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {services.map(service => (
                         <div key={service.title}
                             onClick={() => setPage(service.page, service.props)}
-<<<<<<< HEAD
                             className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col text-center items-center"
                         >
                             <div className="bg-light-gray p-4 rounded-full mb-6">
@@ -192,13 +132,6 @@ const HomePage = ({ setPage }) => {
                             </div>
                             <h3 className="text-xl font-bold text-dark-gray mb-3">{service.title}</h3>
                             <p className="text-gray-600 flex-grow">{service.description}</p>
-=======
-                            className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col text-center"
-                        >
-                            {service.icon}
-                            <h3 className="text-xl font-bold text-gray-800 mt-4">{service.title}</h3>
-                            <p className="text-gray-600 mt-2 flex-grow">{service.description}</p>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                         </div>
                     ))}
                 </div>
@@ -331,24 +264,15 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
     const handleFileChange = (e) => { e.target.files[0] && setFile(e.target.files[0]); };
 
     return (
-<<<<<<< HEAD
         <div className="bg-light-gray py-12 px-4">
             <Modal message={modalInfo.message} onClose={() => setModalInfo({ message: '' })} />
             <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-xl p-8 md:p-12">
                 <button onClick={() => setPage('home')} className="text-primary hover:underline mb-6 font-semibold">&larr; Back to services</button>
                 <h2 className="text-3xl font-bold text-center text-dark-gray mb-2">{title}</h2>
-=======
-        <div className="bg-gray-100 py-12 px-4">
-            <Modal message={modalInfo.message} onClose={() => setModalInfo({ message: '' })} />
-            <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-xl p-8">
-                <button onClick={() => setPage('home')} className="text-blue-600 hover:underline mb-4">&larr; Back to services</button>
-                <h2 className="text-3xl font-bold text-center mb-2">{title}</h2>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                 <p className="text-center text-gray-600 mb-8">Please provide the details for your request below.</p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-<<<<<<< HEAD
                         <input type="text" placeholder="Full Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
                         <input type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
                     </div>
@@ -359,40 +283,19 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Academic Level</label>
                         <select value={formData.academicLevel} onChange={(e) => setFormData({...formData, academicLevel: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full bg-white focus:ring-2 focus:ring-primary focus:outline-none">
-=======
-                        <input type="text" placeholder="Full Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-                        <input type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="tel" placeholder="WhatsApp Number" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-                        <input type="text" placeholder="Subject / Module" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Academic Level</label>
-                        <select value={formData.academicLevel} onChange={(e) => setFormData({...formData, academicLevel: e.target.value})} required className="p-3 border border-gray-300 rounded-lg w-full bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                             <option>Diploma</option><option>HND</option><option>BSc</option><option>MSc</option><option>PhD</option>
                         </select>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
-<<<<<<< HEAD
                         <input type="date" value={formData.deadline} onChange={handleDateChange} required min={getMinDeadline()} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/>
-=======
-                        <input type="date" value={formData.deadline} onChange={handleDateChange} required min={getMinDeadline()} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                         {deadlineError && <p className="text-red-500 text-sm mt-1">{deadlineError}</p>}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Describe Your Requirements</label>
                         <div className="flex border border-gray-300 rounded-lg p-1 bg-gray-100">
-<<<<<<< HEAD
                             <button type="button" onClick={() => setDescriptionMode('text')} className={`w-1/2 py-2 rounded-md transition-colors font-medium ${descriptionMode === 'text' ? 'bg-white shadow text-primary' : 'text-gray-600'}`}>Written</button>
                             <button type="button" onClick={() => setDescriptionMode('audio')} className={`w-1/2 py-2 rounded-md transition-colors font-medium ${descriptionMode === 'audio' ? 'bg-white shadow text-primary' : 'text-gray-600'}`}>Voice Note</button>
-=======
-                            <button type="button" onClick={() => setDescriptionMode('text')} className={`w-1/2 py-2 rounded-md transition-colors ${descriptionMode === 'text' ? 'bg-white shadow text-blue-600 font-semibold' : 'text-gray-600'}`}>Written</button>
-                            <button type="button" onClick={() => setDescriptionMode('audio')} className={`w-1/2 py-2 rounded-md transition-colors ${descriptionMode === 'audio' ? 'bg-white shadow text-blue-600 font-semibold' : 'text-gray-600'}`}>Voice Note</button>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                         </div>
                         <div className="mt-4">
                             {descriptionMode === 'text' ? (
@@ -401,29 +304,17 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
                                     onChange={(e) => setTextDescription(e.target.value)}
                                     rows="4"
                                     placeholder="Please describe what you need help with..."
-<<<<<<< HEAD
                                     className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"
-=======
-                                    className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                                 ></textarea>
                             ) : (
                                 <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 text-center">
                                     {!isRecording && !audioURL && (
-<<<<<<< HEAD
                                         <button type="button" onClick={handleStartRecording} className="inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">
-=======
-                                        <button type="button" onClick={handleStartRecording} className="inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                                             <Mic className="w-5 h-5 mr-2"/> Start Recording
                                         </button>
                                     )}
                                     {isRecording && (
-<<<<<<< HEAD
                                         <button type="button" onClick={handleStopRecording} className="inline-flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 animate-pulse font-semibold">
-=======
-                                        <button type="button" onClick={handleStopRecording} className="inline-flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 animate-pulse">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                                             <StopCircle className="w-5 h-5 mr-2"/> Stop Recording
                                         </button>
                                     )}
@@ -431,11 +322,7 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
                                         <div className="space-y-3">
                                             <p className="text-sm text-gray-600">Recording complete. You can play it back before submitting.</p>
                                             <audio src={audioURL} controls className="w-full"></audio>
-<<<<<<< HEAD
                                             <button type="button" onClick={resetRecording} className="inline-flex items-center text-red-600 hover:text-red-800 font-semibold">
-=======
-                                            <button type="button" onClick={resetRecording} className="inline-flex items-center text-red-600 hover:text-red-800">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                                                 <Trash2 className="w-4 h-4 mr-1"/> Record Again
                                             </button>
                                         </div>
@@ -453,11 +340,7 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
                         </label>
                         <input id="file-upload" type="file" onChange={handleFileChange} className="hidden" accept=".pdf,.doc,.docx,.pptx,.txt"/>
                     </div>
-<<<<<<< HEAD
                     <button type="submit" disabled={isLoading || !!deadlineError} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-lg shadow-md hover:shadow-lg transform hover:-translate-y-1">
-=======
-                    <button type="submit" disabled={isLoading || !!deadlineError} className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                         {isLoading ? 'Submitting...' : 'Submit Request'}
                     </button>
                 </form>
@@ -494,11 +377,7 @@ const AdminDashboard = ({ db }) => {
 
     return (
         <div className="container mx-auto p-6">
-<<<<<<< HEAD
             <h1 className="text-3xl font-bold mb-6 text-dark-gray">Admin Dashboard</h1>
-=======
-            <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
             <div className="bg-white shadow-md rounded-lg overflow-x-auto">
                 {isLoading ? ( <p className="p-4 text-center">Loading submissions...</p> ) : 
                  assignments.length === 0 ? ( <p className="p-4 text-center">No assignments submitted yet.</p> ) : (
@@ -516,7 +395,6 @@ const AdminDashboard = ({ db }) => {
                             {assignments.map(job => (
                                 <tr key={job.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
-<<<<<<< HEAD
                                         <div className="text-sm font-medium text-dark-gray">{job.serviceTitle}</div>
                                         {job.isEmergency && <span className='text-xs text-red-600 font-bold'>EMERGENCY</span>}
                                     </td>
@@ -525,16 +403,6 @@ const AdminDashboard = ({ db }) => {
                                         <div className="text-sm text-gray-500">{job.email}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{job.subject}</td>
-=======
-                                        <div className="text-sm font-medium text-gray-900">{job.serviceTitle}</div>
-                                        {job.isEmergency && <span className='text-xs text-red-600 font-bold'>EMERGENCY</span>}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{job.name}</div>
-                                        <div className="text-sm text-gray-500">{job.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{job.subject}</td>
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {job.descriptionType === 'audio' ? 'Voice Note' : 'Written'}
                                     </td>
@@ -550,28 +418,17 @@ const AdminDashboard = ({ db }) => {
 };
 
 const PlaceholderPage = ({ title, message, setPage }) => (
-<<<<<<< HEAD
     <div className="flex-grow flex flex-col items-center justify-center text-center bg-light-gray p-6">
         <h2 className="text-3xl font-bold text-dark-gray">{title}</h2>
         <p className="mt-4 text-gray-600 max-w-md">{message}</p>
         <button onClick={() => setPage('home')} className="mt-8 bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-hover transition-colors shadow-md hover:shadow-lg">
-=======
-    <div className="flex-grow flex flex-col items-center justify-center text-center bg-gray-50 p-6">
-        <h2 className="text-3xl font-bold text-gray-800">{title}</h2>
-        <p className="mt-4 text-gray-600 max-w-md">{message}</p>
-        <button onClick={() => setPage('home')} className="mt-6 bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
             Back to Home
         </button>
     </div>
 );
 
 const ConfigWarningPage = () => (
-<<<<<<< HEAD
     <div className="flex-grow flex items-center justify-center bg-light-gray p-4">
-=======
-    <div className="flex-grow flex items-center justify-center bg-gray-50 p-4">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-6 rounded-lg shadow-md max-w-2xl w-full">
             <div className="flex">
                 <div className="py-1"><AlertTriangle className="h-6 w-6 text-yellow-500 mr-4"/></div>
@@ -625,11 +482,7 @@ export default function App() {
     }, []);
     
     useEffect(() => {
-<<<<<<< HEAD
         if (!isConfigValid || !auth) return;
-=======
-        if (!auth) return;
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
         
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -643,11 +496,7 @@ export default function App() {
         });
 
         return () => unsubscribe();
-<<<<<<< HEAD
     }, [auth, isConfigValid]);
-=======
-    }, [auth]);
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
 
     const setPage = useCallback((newPage, props = {}) => {
         setPageState(newPage);
@@ -682,20 +531,12 @@ export default function App() {
     };
 
     return (
-<<<<<<< HEAD
         <div className="flex flex-col min-h-screen bg-light-gray font-sans">
-=======
-        <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
             <Header setPage={setPage} userId={userId} />
             <main className="flex-grow flex flex-col">
                 {renderPage()}
             </main>
-<<<<<<< HEAD
             <footer className="bg-dark-gray text-white text-center p-6">
-=======
-            <footer className="bg-gray-800 text-white text-center p-4">
->>>>>>> c961dcaf374378fcf2f1fb15a828fff33f68e0b1
                 <p>&copy; {new Date().getFullYear()} Edu-Hub. All Rights Reserved.</p>
             </footer>
         </div>
