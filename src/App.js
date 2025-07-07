@@ -45,7 +45,7 @@ const Trash2=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height
 const AlertTriangle=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>);
 const ChevronLeft=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m15 18-6-6 6-6"/></svg>);
 const ChevronRight=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m9 18 6-6-6-6"/></svg>);
-
+const Download=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>);
 
 // --- Reusable UI Components ---
 
@@ -69,7 +69,7 @@ const Header = ({ setPage, user, auth }) => {
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            setPage('home'); // Redirect to home after logout
+            setPage('home');
         } catch (error) {
             console.error("Error signing out: ", error);
         }
@@ -78,16 +78,11 @@ const Header = ({ setPage, user, auth }) => {
     return (
         <header className="bg-white shadow-sm sticky top-0 z-40">
             <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-                <div 
-                    className="cursor-pointer text-3xl font-extrabold text-dark-gray"
-                    onClick={() => setPage('home')}
-                >
-                    Edu-<span className="text-primary">Hub</span>
-                </div>
+                <div className="cursor-pointer text-3xl font-extrabold text-dark-gray" onClick={() => setPage('home')}>Edu-<span className="text-primary">Hub</span></div>
                 <div className="flex items-center space-x-2 md:space-x-4">
                     {user ? (
                         <>
-                            <button onClick={() => setPage('dashboard')} className="hidden sm:block bg-gray-200 text-dark-gray font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Dashboard</button>
+                            <button onClick={() => setPage('dashboard')} className="bg-gray-200 text-dark-gray font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Dashboard</button>
                             <button onClick={() => setPage('profile')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">Profile</button>
                             <button onClick={handleLogout} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">Logout</button>
                         </>
@@ -107,7 +102,7 @@ const HomePage = ({ setPage }) => {
     const services = [
         { title: "Standard Assignment Help", icon: <BookOpen className="w-12 h-12" style={{ color: '#1a237e' }}/>, page: 'assignmentForm', props: { isEmergency: false, title: "Standard Assignment Help" }, description: "Expert help with your assignments. Standard delivery with a minimum 5-day deadline." },
         { title: "Emergency Assignment Help", icon: <Zap className="w-12 h-12" style={{ color: '#ef4444' }}/>, page: 'assignmentForm', props: { isEmergency: true, title: "Emergency Assignment Help" }, description: "Urgent deadline? Our emergency service delivers within 48 hours. Subject to review." },
-        { title: "Research & Dissertation Help", icon: <GraduationCap className="w-12 h-12" style={{ color: '#f9a825' }}/>, page: 'assignmentForm', props: { isEmergency: false, title: "Research & Dissertation Help" }, description: "Comprehensive support for your research papers and dissertations, from proposal to final submission." },
+        { title: "Research & Dissertation Help", icon: <GraduationCap className="w-12 h-12" style={{ color: '#f9a825' }}/>, page: 'assignmentForm', props: { isEmergency: false, title: "Research & Dissertation Help" }, description: "Comprehensive support for your research papers and dissertations." },
         { title: "Education Consultation", icon: <CalendarDays className="w-12 h-12" style={{ color: '#1a237e' }}/>, page: 'consultation', props: { title: "Book an Education Consultation"}, description: "Schedule a session with our expert consultants to plan your academic future." },
         { title: "Life Coaching", icon: <HeartHandshake className="w-12 h-12" style={{ color: '#ef4444' }}/>, page: 'consultation', props: { title: "Book a Life Coaching Session"}, description: "Guidance for university life and career paths. Free for students." },
         { title: "PhD Scholarship Guidance", icon: <Trophy className="w-12 h-12" style={{ color: '#f9a825' }}/>, page: 'consultation', props: { title: "Book PhD Scholarship Guidance"}, description: "Get expert advice and assistance in securing your PhD scholarship." },
@@ -115,38 +110,12 @@ const HomePage = ({ setPage }) => {
 
     return (
         <div className="flex-grow bg-light-gray">
-            <div className="text-center py-20 md:py-28 px-4 bg-white">
-                <h1 className="text-4xl md:text-6xl font-extrabold text-dark-gray leading-tight">Your Academic Success Partner</h1>
-                <p className="text-lg text-gray-600 mt-6 max-w-3xl mx-auto">From complex assignments to life-changing decisions, we're here to guide you every step of the way.</p>
-                 <button 
-                    onClick={() => setPage('assignmentForm', { isEmergency: false, title: "Get Started" })}
-                    className="mt-10 bg-primary text-white font-bold text-lg py-3 px-10 rounded-full hover:bg-primary-hover transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                    Get Help Now
-                </button>
-            </div>
-            <div className="container mx-auto px-6 py-20">
-                <h2 className="text-3xl font-bold text-center text-dark-gray mb-12">Our Services</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {services.map(service => (
-                        <div key={service.title}
-                            onClick={() => setPage(service.page, service.props)}
-                            className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col text-center items-center"
-                        >
-                            <div className="bg-light-gray p-4 rounded-full mb-6">
-                                {service.icon}
-                            </div>
-                            <h3 className="text-xl font-bold text-dark-gray mb-3">{service.title}</h3>
-                            <p className="text-gray-600 flex-grow">{service.description}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <div className="text-center py-20 md:py-28 px-4 bg-white"><h1 className="text-4xl md:text-6xl font-extrabold text-dark-gray leading-tight">Your Academic Success Partner</h1><p className="text-lg text-gray-600 mt-6 max-w-3xl mx-auto">From complex assignments to life-changing decisions, we're here to guide you every step of the way.</p><button onClick={() => setPage('assignmentForm', { isEmergency: false, title: "Get Started" })} className="mt-10 bg-primary text-white font-bold text-lg py-3 px-10 rounded-full hover:bg-primary-hover transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">Get Help Now</button></div>
+            <div className="container mx-auto px-6 py-20"><h2 className="text-3xl font-bold text-center text-dark-gray mb-12">Our Services</h2><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">{services.map(service => (<div key={service.title} onClick={() => setPage(service.page, service.props)} className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col text-center items-center"><div className="bg-light-gray p-4 rounded-full mb-6">{service.icon}</div><h3 className="text-xl font-bold text-dark-gray mb-3">{service.title}</h3><p className="text-gray-600 flex-grow">{service.description}</p></div>))}</div></div>
         </div>
     );
 };
 
-// ... AssignmentForm component remains the same ...
 const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Submit Your Assignment" }) => {
     const [formData, setFormData] = useState({ name: '', email: '', whatsapp: '', subject: '', academicLevel: 'Diploma', deadline: '' });
     const [file, setFile] = useState(null);
@@ -237,7 +206,6 @@ const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Sub
     );
 };
 
-// --- NEW CALENDAR BOOKING COMPONENT ---
 const ConsultationBooking = ({ db, userId, setPage, title }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
@@ -245,9 +213,9 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
     const [bookedSlots, setBookedSlots] = useState([]);
     const [modalContent, setModalContent] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [bookingDetails, setBookingDetails] = useState({ name: '', email: '' });
+    const [bookingDetails, setBookingDetails] = useState({ name: '', email: '', phone: '', message: '' });
 
-    const availableTimes = ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"];
+    const availableTimes = ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM", "07:00 PM"];
 
     useEffect(() => {
         if (!db || !selectedDate) return;
@@ -265,15 +233,17 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
     const changeMonth = (amount) => { setCurrentDate(prev => { const newDate = new Date(prev); newDate.setMonth(prev.getMonth() + amount); return newDate; }); };
     const handleDateClick = (day) => { if (day < new Date().getDate() && currentDate.getMonth() === new Date().getMonth()) return; const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day); setSelectedDate(newSelectedDate); setSelectedTime(null); };
     const handleTimeSelect = (time) => { setSelectedTime(time); setModalContent("form"); };
+    
     const handleBookingSubmit = async (e) => {
         e.preventDefault(); setIsLoading(true);
         try {
             const appId = firebaseConfig.appId || 'default-app-id';
             const collectionPath = `/artifacts/${appId}/public/data/bookings`;
             const docId = `${selectedDate.toISOString().split('T')[0]}_${selectedTime}`;
-            await setDoc(doc(db, collectionPath, docId), { title, date: selectedDate.toISOString().split('T')[0], time: selectedTime, name: bookingDetails.name, email: bookingDetails.email, userId, bookedAt: new Date() });
+            await setDoc(doc(db, collectionPath, docId), { title, date: selectedDate.toISOString().split('T')[0], time: selectedTime, ...bookingDetails, userId, bookedAt: new Date() });
             setBookedSlots([...bookedSlots, selectedTime]);
             setModalContent("success");
+            setBookingDetails({ name: '', email: '', phone: '', message: '' });
         } catch (error) {
             setModalContent("error");
         } finally { setIsLoading(false); }
@@ -294,12 +264,12 @@ const ConsultationBooking = ({ db, userId, setPage, title }) => {
     const renderTimeSlots = () => {
         if (!selectedDate) return <p className="mt-8 text-center text-gray-500">Please select a date to see available times.</p>;
         return (
-            <div className="mt-8"><h3 className="font-semibold text-center mb-4">Available slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3><div className="grid grid-cols-2 md:grid-cols-4 gap-4">{availableTimes.map(time => { const isBooked = bookedSlots.includes(time); return (<button key={time} disabled={isBooked} onClick={() => handleTimeSelect(time)} className={`p-3 rounded-lg font-semibold transition-colors ${isBooked ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'}`}>{time}</button>); })}</div></div>
+            <div className="mt-8"><h3 className="font-semibold text-center mb-4">Available slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3><div className="grid grid-cols-2 md:grid-cols-3 gap-4">{availableTimes.map(time => { const isBooked = bookedSlots.includes(time); return (<button key={time} disabled={isBooked} onClick={() => handleTimeSelect(time)} className={`p-3 rounded-lg font-semibold transition-colors ${isBooked ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'}`}>{time}</button>); })}</div></div>
         );
     };
 
     const renderModalContent = () => {
-        if (modalContent === "form") { return (<div><h3 className="text-xl font-bold mb-4">Confirm Your Booking</h3><p className="mb-4">You are booking for <span className="font-semibold">{title}</span> on <span className="font-semibold">{selectedDate.toLocaleDateString()}</span> at <span className="font-semibold">{selectedTime}</span>.</p><form onSubmit={handleBookingSubmit} className="text-left space-y-4"><input type="text" placeholder="Full Name" required value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><input type="email" placeholder="Email Address" required value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><button type="submit" disabled={isLoading} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400">{isLoading ? "Booking..." : "Confirm Booking"}</button></form></div>); }
+        if (modalContent === "form") { return (<div><h3 className="text-xl font-bold mb-4">Confirm Your Booking</h3><p className="mb-4 text-gray-600">You are booking <span className="font-semibold text-dark-gray">{title}</span> on <span className="font-semibold text-dark-gray">{selectedDate.toLocaleDateString()}</span> at <span className="font-semibold text-dark-gray">{selectedTime}</span>.</p><form onSubmit={handleBookingSubmit} className="text-left space-y-4"><input type="text" placeholder="Full Name" required value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><input type="email" placeholder="Email Address" required value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><input type="tel" placeholder="Phone Number" required value={bookingDetails.phone} onChange={e => setBookingDetails({...bookingDetails, phone: e.target.value})} className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"/><textarea placeholder="Message (optional)" value={bookingDetails.message} onChange={e => setBookingDetails({...bookingDetails, message: e.target.value})} rows="3" className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-primary focus:outline-none"></textarea><button type="submit" disabled={isLoading} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors disabled:bg-gray-400">{isLoading ? "Booking..." : "Confirm Booking"}</button></form></div>); }
         if (modalContent === "success") { return (<div><h3 className="text-xl font-bold mb-4 text-green-600">Booking Confirmed!</h3><p>Your consultation is booked. You will receive a confirmation email shortly.</p></div>); }
         if (modalContent === "error") { return (<div><h3 className="text-xl font-bold mb-4 text-red-600">Booking Failed</h3><p>Something went wrong. Please try again.</p></div>); }
         return null;
@@ -317,6 +287,7 @@ const AdminDashboard = ({ db }) => {
     const [bookings, setBookings] = useState([]);
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [filterDate, setFilterDate] = useState('');
 
     useEffect(() => {
         if (!db) return;
@@ -356,14 +327,39 @@ const AdminDashboard = ({ db }) => {
         return () => unsubscribe();
     }, [db, view]);
 
+    const downloadCSV = (data, filename) => {
+        if (data.length === 0) return;
+        const headers = Object.keys(data[0]);
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + [headers.join(','), ...data.map(row => headers.map(header => JSON.stringify(row[header])).join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `${filename}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const filteredBookings = filterDate ? bookings.filter(b => b.date === filterDate) : bookings;
+
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6 text-dark-gray">Admin Dashboard</h1>
             <div className="flex border-b mb-6">
-                <button onClick={() => setView('assignments')} className={`py-2 px-4 font-semibold ${view === 'assignments' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Submissions</button>
-                <button onClick={() => setView('bookings')} className={`py-2 px-4 font-semibold ${view === 'bookings' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Bookings</button>
-                <button onClick={() => setView('users')} className={`py-2 px-4 font-semibold ${view === 'users' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Users</button>
+                <button onClick={() => setView('assignments')} className={`py-2 px-4 font-semibold ${view === 'assignments' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Submissions ({assignments.length})</button>
+                <button onClick={() => setView('bookings')} className={`py-2 px-4 font-semibold ${view === 'bookings' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Bookings ({bookings.length})</button>
+                <button onClick={() => setView('users')} className={`py-2 px-4 font-semibold ${view === 'users' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>Users ({users.length})</button>
             </div>
+            {view === 'bookings' && (
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <label htmlFor="filterDate" className="mr-2 font-semibold">Filter by date:</label>
+                        <input type="date" id="filterDate" value={filterDate} onChange={e => setFilterDate(e.target.value)} className="p-2 border rounded-lg"/>
+                    </div>
+                    <button onClick={() => downloadCSV(filteredBookings, 'bookings')} className="bg-secondary hover:bg-secondary-hover text-white font-semibold py-2 px-4 rounded-lg flex items-center"><Download className="mr-2 h-5 w-5"/>Download CSV</button>
+                </div>
+            )}
             <div className="bg-white shadow-md rounded-lg overflow-x-auto">
                 {isLoading ? ( <p className="p-4 text-center">Loading...</p> ) : 
                  view === 'assignments' ? (
@@ -373,10 +369,10 @@ const AdminDashboard = ({ db }) => {
                         <tbody className="bg-white divide-y divide-gray-200">{assignments.map(job => (<tr key={job.id}><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{job.serviceTitle}</div>{job.isEmergency && <span className='text-xs text-red-600 font-bold'>EMERGENCY</span>}</td><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{job.name}</div><div className="text-sm text-gray-500">{job.email}</div></td><td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{job.subject}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{job.deadline}</td></tr>))}</tbody>
                     </table>
                  ) : view === 'bookings' ? (
-                    bookings.length === 0 ? <p className="p-4 text-center">No bookings yet.</p> :
+                    filteredBookings.length === 0 ? <p className="p-4 text-center">No bookings for the selected date.</p> :
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th></tr></thead>
-                        <tbody className="bg-white divide-y divide-gray-200">{bookings.map(book => (<tr key={book.id}><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.date}</div><div className="text-sm text-gray-500">{book.time}</div></td><td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{book.title}</td><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.name}</div><div className="text-sm text-gray-500">{book.email}</div></td></tr>))}</tbody>
+                        <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th></tr></thead>
+                        <tbody className="bg-white divide-y divide-gray-200">{filteredBookings.map(book => (<tr key={book.id}><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.date}</div><div className="text-sm text-gray-500">{book.time}</div></td><td className="px-6 py-4 whitespace-nowrap text-sm text-dark-gray">{book.title}</td><td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-dark-gray">{book.name}</div><div className="text-sm text-gray-500">{book.email}</div></td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{book.phone}</td></tr>))}</tbody>
                     </table>
                  ) : ( // view === 'users'
                     users.length === 0 ? <p className="p-4 text-center">No users registered yet.</p> :
@@ -392,73 +388,24 @@ const AdminDashboard = ({ db }) => {
 };
 
 const AuthPage = ({ title, handleSubmit, isLogin, setPage }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-
+    const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [isLoading, setIsLoading] = useState(false);
     const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setIsLoading(true);
-        try {
-            await handleSubmit(email, password);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
+        e.preventDefault(); setError(''); setIsLoading(true);
+        try { await handleSubmit(email, password); } 
+        catch (err) { setError(err.message); } 
+        finally { setIsLoading(false); }
     };
-
     return (
         <div className="flex-grow flex items-center justify-center bg-light-gray p-4">
-            <div className="w-full max-w-md">
-                <form onSubmit={handleFormSubmit} className="bg-white shadow-2xl rounded-2xl px-8 pt-10 pb-10 mb-4">
-                    <h2 className="text-3xl font-bold text-center text-dark-gray mb-8">{title}</h2>
-                    {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center">{error}</p>}
-                    <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
-                        <input className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" id="email" type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    </div>
-                    <div className="mb-8">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
-                        <input className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" id="password" type="password" placeholder="******************" value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <button className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors" type="submit" disabled={isLoading}>
-                            {isLoading ? 'Processing...' : title}
-                        </button>
-                    </div>
-                    <p className="text-center text-gray-500 text-sm mt-8">
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <button type="button" onClick={() => setPage(isLogin ? 'signup' : 'login')} className="font-bold text-primary hover:text-primary-hover">
-                            {isLogin ? "Sign Up" : "Login"}
-                        </button>
-                    </p>
-                </form>
-            </div>
+            <div className="w-full max-w-md"><form onSubmit={handleFormSubmit} className="bg-white shadow-2xl rounded-2xl px-8 pt-10 pb-10 mb-4"><h2 className="text-3xl font-bold text-center text-dark-gray mb-8">{title}</h2>{error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center">{error}</p>}<div className="mb-6"><label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label><input className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" id="email" type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} /></div><div className="mb-8"><label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label><input className="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" id="password" type="password" placeholder="******************" value={password} onChange={(e) => setPassword(e.target.value)} /></div><div className="flex items-center justify-between"><button className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors" type="submit" disabled={isLoading}>{isLoading ? 'Processing...' : title}</button></div><p className="text-center text-gray-500 text-sm mt-8">{isLogin ? "Don't have an account? " : "Already have an account? "}<button type="button" onClick={() => setPage(isLogin ? 'signup' : 'login')} className="font-bold text-primary hover:text-primary-hover">{isLogin ? "Sign Up" : "Login"}</button></p></form></div>
         </div>
     );
 };
 
 const ProfilePage = ({ user, auth, setPage }) => {
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            setPage('home');
-        } catch (error) {
-            console.error("Error signing out: ", error);
-        }
-    };
-
+    const handleLogout = async () => { try { await signOut(auth); setPage('home'); } catch (error) { console.error("Error signing out: ", error); } };
     return (
-        <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-6 text-dark-gray">Your Profile</h1>
-            <div className="bg-white p-8 rounded-xl shadow-lg">
-                <p className="text-lg mb-4"><strong>Email:</strong> {user.email}</p>
-                <button onClick={handleLogout} className="bg-red-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition-colors">Logout</button>
-            </div>
-        </div>
+        <div className="container mx-auto p-6"><h1 className="text-3xl font-bold mb-6 text-dark-gray">Your Profile</h1><div className="bg-white p-8 rounded-xl shadow-lg"><p className="text-lg mb-4"><strong>Email:</strong> {user.email}</p><button onClick={handleLogout} className="bg-red-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-red-600 transition-colors">Logout</button></div></div>
     );
 };
 
