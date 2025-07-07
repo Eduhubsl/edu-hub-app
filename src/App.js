@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
     getAuth, 
@@ -12,16 +12,12 @@ import {
 import { 
     getFirestore, 
     collection, 
-    addDoc, 
     onSnapshot, 
     query, 
-    where, 
-    getDocs, 
     setDoc, 
     doc,
     getDoc,
-    updateDoc,
-    deleteDoc
+    updateDoc
 } from 'firebase/firestore';
 
 // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
@@ -42,33 +38,9 @@ const CalendarDays=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" 
 const HeartHandshake=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08v0c.82.82 2.13.82 2.94 0l.06-.06L12 11l2.96-2.96a2.17 2.17 0 0 1 2.94 0v0c.82.82.82 2.13 0 3.08L12 14Z"/></svg>);
 const GraduationCap=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.838l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12v5a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-5"/></svg>);
 const Trophy=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
-const UploadCloud=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>);
-const Mic=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>);
-const StopCircle=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></svg>);
-const Trash2=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>);
-const AlertTriangle=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>);
-const ChevronLeft=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m15 18-6-6 6-6"/></svg>);
-const ChevronRight=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m9 18 6-6-6-6"/></svg>);
-const Download=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>);
 const GoogleIcon = (props) => (<svg viewBox="0 0 48 48" width="24px" height="24px" {...props}><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,36.596,44,31.023,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>);
 const StarIcon = ({ className }) => (<svg className={className} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>);
-
-
-// --- Reusable UI Components ---
-
-const Modal = ({ children, onClose }) => {
-    if (!children) return null;
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 font-sans">
-            <div className="bg-white rounded-lg shadow-xl p-8 w-11/12 max-w-md text-center relative">
-                 <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-                {children}
-            </div>
-        </div>
-    );
-};
+const AlertTriangle=(props)=>(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>);
 
 // --- Main Application Components ---
 
@@ -76,7 +48,7 @@ const Header = ({ setPage, user, auth }) => {
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            setPage('home'); // Redirect to home after logout
+            setPage('home');
         } catch (error) {
             console.error("Error signing out: ", error);
         }
@@ -125,7 +97,6 @@ const HomePage = ({ setPage }) => {
             <div className="text-center py-20 md:py-28 px-4 bg-white"><h1 className="text-4xl md:text-6xl font-extrabold text-dark-gray leading-tight">Your Academic Success Partner</h1><p className="text-lg text-gray-600 mt-6 max-w-3xl mx-auto">From complex assignments to life-changing decisions, we're here to guide you every step of the way.</p><button onClick={() => setPage('assignmentForm', { isEmergency: false, title: "Get Started" })} className="mt-10 bg-primary text-white font-bold text-lg py-3 px-10 rounded-full hover:bg-primary-hover transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">Get Help Now</button></div>
             <div className="container mx-auto px-6 py-20"><h2 className="text-3xl font-bold text-center text-dark-gray mb-12">Our Services</h2><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">{services.map(service => (<div key={service.title} onClick={() => setPage(service.page, service.props)} className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col text-center items-center"><div className="bg-light-gray p-4 rounded-full mb-6">{service.icon}</div><h3 className="text-xl font-bold text-dark-gray mb-3">{service.title}</h3><p className="text-gray-600 flex-grow">{service.description}</p></div>))}</div></div>
             
-            {/* --- NEW REVIEWS SECTION --- */}
             <div className="bg-white py-20">
                 <div className="container mx-auto px-6">
                     <h2 className="text-3xl font-bold text-center text-dark-gray mb-12">What Our Students Say</h2>
@@ -149,17 +120,13 @@ const HomePage = ({ setPage }) => {
     );
 };
 
-const AssignmentForm = ({ db, userId, setPage, isEmergency = false, title = "Submit Your Assignment" }) => {
-    // ... AssignmentForm logic remains the same
-    return <div>Assignment Form Placeholder</div>; // Simplified for brevity
+const AssignmentForm = () => {
+    return <div className="p-8">This feature will be built in Phase 2.</div>;
 };
 
-const ConsultationBooking = ({ db, userId, setPage, title }) => {
-    // ... ConsultationBooking logic remains the same
-    return <div>Booking Calendar Placeholder</div>; // Simplified for brevity
+const ConsultationBooking = () => {
+    return <div className="p-8">This feature will be built in Phase 2.</div>;
 };
-
-// --- NEW AUTHENTICATION AND USER PROFILE COMPONENTS ---
 
 const AuthPage = ({ title, handleSubmit, handleGoogleSignIn, isLogin, setPage }) => {
     const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [isLoading, setIsLoading] = useState(false);
@@ -238,7 +205,7 @@ const UserDashboard = ({ user, db, setPage }) => {
         }
     };
 
-    if (isLoading) return <div>Loading Dashboard...</div>;
+    if (isLoading) return <div className="flex-grow flex items-center justify-center"><p>Loading Dashboard...</p></div>;
 
     return (
         <div className="container mx-auto p-6">
@@ -253,7 +220,6 @@ const UserDashboard = ({ user, db, setPage }) => {
                      <div className="bg-white p-8 rounded-xl shadow-lg">
                         <h2 className="text-2xl font-bold mb-4">My Documents</h2>
                         <p className="text-gray-500">Documents uploaded by the admin will appear here.</p>
-                        {/* Document list will be added in Phase 3 */}
                     </div>
                 </div>
                 <div className="bg-white p-8 rounded-xl shadow-lg">
@@ -290,8 +256,10 @@ const AdminDashboard = ({ db }) => {
         
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (view === 'users') setUsers(data);
-            // Add logic for other views later
+            if (view === 'users') {
+                 data.sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
+                 setUsers(data);
+            }
             setIsLoading(false);
         });
         
@@ -312,7 +280,7 @@ const AdminDashboard = ({ db }) => {
                     users.length === 0 ? <p className="p-4 text-center">No users registered yet.</p> :
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered On</th></tr></thead>
-                        <tbody className="bg-white divide-y divide-gray-200">{users.map(user => (<tr key={user.id}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-gray">{user.email}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.name || 'N/A'}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.createdAt.toDate().toLocaleString()}</td></tr>))}</tbody>
+                        <tbody className="bg-white divide-y divide-gray-200">{users.map(user => (<tr key={user.id}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-gray">{user.email}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.name || 'N/A'}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.createdAt?.toDate().toLocaleString() || 'N/A'}</td></tr>))}</tbody>
                     </table>
                  ) : (
                     <p className="p-4 text-center">This view will be built in a future phase.</p>
