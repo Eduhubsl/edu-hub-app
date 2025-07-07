@@ -1,6 +1,4 @@
-// Final version with all features
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-// ... the rest of the code
+// Final version with all features and fixes
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
