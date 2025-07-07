@@ -93,7 +93,7 @@ const Header = ({ setPage, user, auth }) => {
                 <div className="flex items-center space-x-2 md:space-x-4">
                     {user ? (
                         <>
-                            <button onClick={() => setPage('userDashboard')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">My Dashboard</button>
+                            <button onClick={() => setPage('dashboard')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm hover:shadow-md">My Dashboard</button>
                             <button onClick={handleLogout} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">Logout</button>
                         </>
                     ) : (
